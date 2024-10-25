@@ -1,9 +1,9 @@
 var knex = require('knex')({
     client: 'mysql',
     connection: {
-        host : '',
-        user : '', 
-        password : '',
+        host : 'mysql.controlfood.kinghost.net',
+        user : 'controlfood', 
+        password : 'controlfood2024',
         database : 'controlfood'
      }
 });

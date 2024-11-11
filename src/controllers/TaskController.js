@@ -1,14 +1,12 @@
-const database = require('../database/connection');
-
+const db = require('../database/connection');
 
 class TaskController {
-
+  
   // Usuários
   static async novoUsuario(req, res) {
     const { nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque } = req.body;
     try {
-      await db.query('INSERT INTO usuarios (nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-        [nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque]);
+      await db('usuarios').insert({ nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque });
       res.status(201).send('Usuário criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar usuário' });
@@ -17,7 +15,7 @@ class TaskController {
 
   static async listarUsuarios(req, res) {
     try {
-      const [usuarios] = await db.query('SELECT * FROM usuarios');
+      const usuarios = await db('usuarios').select('*');
       res.json(usuarios);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar usuários' });
@@ -27,7 +25,7 @@ class TaskController {
   static async listarUmUsuario(req, res) {
     const { id } = req.params;
     try {
-      const [usuario] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [id]);
+      const usuario = await db('usuarios').where('id_usuario', id).first();
       res.json(usuario);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar usuário' });
@@ -38,8 +36,7 @@ class TaskController {
     const { id } = req.params;
     const { nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque } = req.body;
     try {
-      await db.query('UPDATE usuarios SET nome = ?, email = ?, senha = ?, acesso_criar_usuario = ?, acesso_dashboard = ?, acesso_criar_pedido = ?, acesso_estoque = ? WHERE id_usuario = ?', 
-        [nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque, id]);
+      await db('usuarios').where('id_usuario', id).update({ nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque });
       res.send('Usuário atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar usuário' });
@@ -49,7 +46,7 @@ class TaskController {
   static async removerUsuario(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM usuarios WHERE id_usuario = ?', [id]);
+      await db('usuarios').where('id_usuario', id).del();
       res.send('Usuário removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover usuário' });
@@ -60,27 +57,26 @@ class TaskController {
   static async novoIngrediente(req, res) {
     const { descricao, contem_alergicos, informacoes_nutricionais } = req.body;
     try {
-      await db.query('INSERT INTO ingrediente (descricao, contem_alergicos, informacoes_nutricionais) VALUES (?, ?, ?)', 
-        [descricao, contem_alergicos, informacoes_nutricionais]);
+      await db('ingrediente').insert({ descricao, contem_alergicos, informacoes_nutricionais });
       res.status(201).send('Ingrediente criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar ingrediente' });
     }
   }
 
-  static async listarIngredientes(req, res) { // busca todos os igredientes
+  static async listarIngredientes(req, res) {
     try {
-      const [ingredientes] = await db.query('SELECT * FROM ingrediente');
+      const ingredientes = await db('ingrediente').select('*');
       res.json(ingredientes);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar ingredientes' });
     }
   }
 
-  static async listarUmIngrediente(req, res) { // busca um igrediente em específico
+  static async listarUmIngrediente(req, res) {
     const { id } = req.params;
     try {
-      const [ingrediente] = await db.query('SELECT * FROM ingrediente WHERE Id_ingrediente = ?', [id]);
+      const ingrediente = await db('ingrediente').where('Id_ingrediente', id).first();
       res.json(ingrediente);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar ingrediente' });
@@ -91,8 +87,7 @@ class TaskController {
     const { id } = req.params;
     const { descricao, contem_alergicos, informacoes_nutricionais } = req.body;
     try {
-      await db.query('UPDATE ingrediente SET descricao = ?, contem_alergicos = ?, informacoes_nutricionais = ? WHERE Id_ingrediente = ?', 
-        [descricao, contem_alergicos, informacoes_nutricionais, id]);
+      await db('ingrediente').where('Id_ingrediente', id).update({ descricao, contem_alergicos, informacoes_nutricionais });
       res.send('Ingrediente atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar ingrediente' });
@@ -102,7 +97,7 @@ class TaskController {
   static async removerIngrediente(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM ingrediente WHERE Id_ingrediente = ?', [id]);
+      await db('ingrediente').where('Id_ingrediente', id).del();
       res.send('Ingrediente removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover ingrediente' });
@@ -113,8 +108,7 @@ class TaskController {
   static async novoHistorico(req, res) {
     const { data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
     try {
-      await db.query('INSERT INTO historico_entrada (data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-        [data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente]);
+      await db('historico_entrada').insert({ data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente });
       res.status(201).send('Histórico de entrada criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar histórico de entrada' });
@@ -123,7 +117,7 @@ class TaskController {
 
   static async listarHistoricos(req, res) {
     try {
-      const [historicos] = await db.query('SELECT * FROM historico_entrada');
+      const historicos = await db('historico_entrada').select('*');
       res.json(historicos);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar históricos de entrada' });
@@ -133,7 +127,7 @@ class TaskController {
   static async listarUmHistorico(req, res) {
     const { id } = req.params;
     try {
-      const [historico] = await db.query('SELECT * FROM historico_entrada WHERE id_historico = ?', [id]);
+      const historico = await db('historico_entrada').where('id_historico', id).first();
       res.json(historico);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar histórico de entrada' });
@@ -144,8 +138,7 @@ class TaskController {
     const { id } = req.params;
     const { data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
     try {
-      await db.query('UPDATE historico_entrada SET data_entrada = ?, quantidade = ?, preco_pago = ?, data_vencimento = ?, marca = ?, medida = ?, ingrediente_Id_ingrediente = ? WHERE id_historico = ?', 
-        [data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente, id]);
+      await db('historico_entrada').where('id_historico', id).update({ data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente });
       res.send('Histórico de entrada atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar histórico de entrada' });
@@ -155,19 +148,22 @@ class TaskController {
   static async removerHistorico(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM historico_entrada WHERE id_historico = ?', [id]);
+      await db('historico_entrada').where('id_historico', id).del();
       res.send('Histórico de entrada removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover histórico de entrada' });
     }
   }
 
-  // Estoque
   static async novoEstoque(req, res) {
     const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
     try {
-      await db.query('INSERT INTO estoque (quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente) VALUES (?, ?, ?, ?)', 
-        [quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente]);
+      await db('estoque').insert({
+        quantidade,
+        medida,
+        quantidade_minima,
+        ingrediente_Id_ingrediente
+      });
       res.status(201).send('Estoque criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar estoque' });
@@ -176,7 +172,7 @@ class TaskController {
 
   static async listarEstoques(req, res) {
     try {
-      const [estoques] = await db.query('SELECT * FROM estoque');
+      const estoques = await db('estoque').select('*');
       res.json(estoques);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar estoques' });
@@ -186,7 +182,7 @@ class TaskController {
   static async listarUmEstoque(req, res) {
     const { id } = req.params;
     try {
-      const [estoque] = await db.query('SELECT * FROM estoque WHERE id_estoque = ?', [id]);
+      const estoque = await db('estoque').where({ id_estoque: id }).first();
       res.json(estoque);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar estoque' });
@@ -197,8 +193,12 @@ class TaskController {
     const { id } = req.params;
     const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
     try {
-      await db.query('UPDATE estoque SET quantidade = ?, medida = ?, quantidade_minima = ?, ingrediente_Id_ingrediente = ? WHERE id_estoque = ?', 
-        [quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente, id]);
+      await db('estoque').where({ id_estoque: id }).update({
+        quantidade,
+        medida,
+        quantidade_minima,
+        ingrediente_Id_ingrediente
+      });
       res.send('Estoque atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar estoque' });
@@ -208,19 +208,17 @@ class TaskController {
   static async removerEstoque(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM estoque WHERE id_estoque = ?', [id]);
+      await db('estoque').where({ id_estoque: id }).del();
       res.send('Estoque removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover estoque' });
     }
   }
 
-  // Pratos
   static async novoPrato(req, res) {
     const { nome, descricao, preco, tempo_preparo } = req.body;
     try {
-      await db.query('INSERT INTO pratos (nome, descricao, preco, tempo_preparo) VALUES (?, ?, ?, ?)', 
-        [nome, descricao, preco, tempo_preparo]);
+      await db('pratos').insert({ nome, descricao, preco, tempo_preparo });
       res.status(201).send('Prato criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar prato' });
@@ -229,7 +227,7 @@ class TaskController {
 
   static async listarPratos(req, res) {
     try {
-      const [pratos] = await db.query('SELECT * FROM pratos');
+      const pratos = await db('pratos').select('*');
       res.json(pratos);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar pratos' });
@@ -239,7 +237,7 @@ class TaskController {
   static async listarUmPrato(req, res) {
     const { id } = req.params;
     try {
-      const [prato] = await db.query('SELECT * FROM pratos WHERE id_prato = ?', [id]);
+      const prato = await db('pratos').where({ id_prato: id }).first();
       res.json(prato);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar prato' });
@@ -250,8 +248,7 @@ class TaskController {
     const { id } = req.params;
     const { nome, descricao, preco, tempo_preparo } = req.body;
     try {
-      await db.query('UPDATE pratos SET nome = ?, descricao = ?, preco = ?, tempo_preparo = ? WHERE id_prato = ?', 
-        [nome, descricao, preco, tempo_preparo, id]);
+      await db('pratos').where({ id_prato: id }).update({ nome, descricao, preco, tempo_preparo });
       res.send('Prato atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar prato' });
@@ -261,19 +258,17 @@ class TaskController {
   static async removerPrato(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM pratos WHERE id_prato = ?', [id]);
+      await db('pratos').where({ id_prato: id }).del();
       res.send('Prato removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover prato' });
     }
   }
 
-  // Clientes
   static async novoCliente(req, res) {
     const { nome, telefone, endereco } = req.body;
     try {
-      await db.query('INSERT INTO cliente (nome, telefone, endereco) VALUES (?, ?, ?)', 
-        [nome, telefone, endereco]);
+      await db('cliente').insert({ nome, telefone, endereco });
       res.status(201).send('Cliente criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar cliente' });
@@ -282,7 +277,7 @@ class TaskController {
 
   static async listarClientes(req, res) {
     try {
-      const [clientes] = await db.query('SELECT * FROM cliente');
+      const clientes = await db('cliente').select('*');
       res.json(clientes);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar clientes' });
@@ -292,7 +287,7 @@ class TaskController {
   static async listarUmCliente(req, res) {
     const { id } = req.params;
     try {
-      const [cliente] = await db.query('SELECT * FROM cliente WHERE id_cliente = ?', [id]);
+      const cliente = await db('cliente').where({ id_cliente: id }).first();
       res.json(cliente);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar cliente' });
@@ -303,8 +298,7 @@ class TaskController {
     const { id } = req.params;
     const { nome, telefone, endereco } = req.body;
     try {
-      await db.query('UPDATE cliente SET nome = ?, telefone = ?, endereco = ? WHERE id_cliente = ?', 
-        [nome, telefone, endereco, id]);
+      await db('cliente').where({ id_cliente: id }).update({ nome, telefone, endereco });
       res.send('Cliente atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar cliente' });
@@ -314,118 +308,24 @@ class TaskController {
   static async removerCliente(req, res) {
     const { id } = req.params;
     try {
-      await db.query('DELETE FROM cliente WHERE id_cliente = ?', [id]);
+      await db('cliente').where({ id_cliente: id }).del();
       res.send('Cliente removido');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover cliente' });
     }
   }
 
-  // Entregadores
-  static async novoEntregador(req, res) {
-    const { nome, telefone, veiculo } = req.body;
-    try {
-      await db.query('INSERT INTO entregador (nome, telefone, veiculo) VALUES (?, ?, ?)', 
-        [nome, telefone, veiculo]);
-      res.status(201).send('Entregador criado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao criar entregador' });
-    }
-  }
 
-  static async listarEntregadores(req, res) {
-    try {
-      const [entregadores] = await db.query('SELECT * FROM entregador');
-      res.json(entregadores);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar entregadores' });
-    }
-  }
 
-  static async listarUmEntregador(req, res) {
-    const { id } = req.params;
-    try {
-      const [entregador] = await db.query('SELECT * FROM entregador WHERE id_entregador = ?', [id]);
-      res.json(entregador);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar entregador' });
-    }
-  }
 
-  static async atualizarEntregador(req, res) {
-    const { id } = req.params;
-    const { nome, telefone, veiculo } = req.body;
-    try {
-      await db.query('UPDATE entregador SET nome = ?, telefone = ?, veiculo = ? WHERE id_entregador = ?', 
-        [nome, telefone, veiculo, id]);
-      res.send('Entregador atualizado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao atualizar entregador' });
-    }
-  }
 
-  static async removerEntregador(req, res) {
-    const { id } = req.params;
-    try {
-      await db.query('DELETE FROM entregador WHERE id_entregador = ?', [id]);
-      res.send('Entregador removido');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao remover entregador' });
-    }
-  }
 
-  // Pedidos
-  static async novoPedido(req, res) {
-    const { data_pedido, status, cliente_Id_cliente, entregador_Id_entregador } = req.body;
-    try {
-      await db.query('INSERT INTO pedidos (data_pedido, status, cliente_Id_cliente, entregador_Id_entregador) VALUES (?, ?, ?, ?)', 
-        [data_pedido, status, cliente_Id_cliente, entregador_Id_entregador]);
-      res.status(201).send('Pedido criado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao criar pedido' });
-    }
-  }
 
-  static async listarPedidos(req, res) {
-    try {
-      const [pedidos] = await db.query('SELECT * FROM pedidos');
-      res.json(pedidos);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar pedidos' });
-    }
-  }
 
-  static async listarUmPedido(req, res) {
-    const { id } = req.params;
-    try {
-      const [pedido] = await db.query('SELECT * FROM pedidos WHERE id_pedido = ?', [id]);
-      res.json(pedido);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar pedido' });
-    }
-  }
 
-  static async atualizarPedido(req, res) {
-    const { id } = req.params;
-    const { data_pedido, status, cliente_Id_cliente, entregador_Id_entregador } = req.body;
-    try {
-      await db.query('UPDATE pedidos SET data_pedido = ?, status = ?, cliente_Id_cliente = ?, entregador_Id_entregador = ? WHERE id_pedido = ?', 
-        [data_pedido, status, cliente_Id_cliente, entregador_Id_entregador, id]);
-      res.send('Pedido atualizado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao atualizar pedido' });
-    }
-  }
 
-  static async removerPedido(req, res) {
-    const { id } = req.params;
-    try {
-      await db.query('DELETE FROM pedidos WHERE id_pedido = ?', [id]);
-      res.send('Pedido removido');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao remover pedido' });
-    }
-  }
+
+
 }
 
 module.exports = TaskController;

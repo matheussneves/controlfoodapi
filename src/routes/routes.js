@@ -3,11 +3,6 @@ const express = require('express');
 const router = express.Router();
 const TaskController = require('../controllers/TaskController');
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log('Conectado ao banco de dados!');
-});
-
 // Rotas para usuários
 router.post('/usuarios', TaskController.novoUsuario);
 router.get('/usuarios', TaskController.listarUsuarios);

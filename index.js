@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const router = require('./src/routes/routes');
 const app = express();
-const porta = 80
+const porta = 21229
 
 app.use(cors());
 app.use(express.json({

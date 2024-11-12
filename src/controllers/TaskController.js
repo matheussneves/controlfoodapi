@@ -1,7 +1,21 @@
 const db = require('../database/connection');
 
 class TaskController {
-  
+  //login
+
+  static async login(req, res) {
+    const { login,senha } = req.body;
+    try {
+      const usuario = await db('usuarios').where({
+        email: login,
+        senha: senha,
+      }).first();
+      res.json({autorizado: (usuario.email !== null) });
+    } catch (error) {
+      res.status(500).json({autorizado: false });
+    }
+  }
+
   // Usuários
   static async novoUsuario(req, res) {
     const { nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque } = req.body;

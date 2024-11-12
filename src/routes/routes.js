@@ -5,7 +5,6 @@ const TaskController = require('../controllers/TaskController');
 // Rotas para login
 router.get('/login', TaskController.login);
 
-
 // Rotas para usuários
 router.post('/usuarios', TaskController.novoUsuario);
 router.get('/usuarios', TaskController.listarUsuarios);

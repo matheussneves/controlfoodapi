@@ -5,12 +5,13 @@ class TaskController {
 
   static async login(req, res) {
     const { login,senha } = req.body;
+    console.log(login + senha);
     try {
       const usuario = await db('usuarios').where({
         email: login,
         senha: senha,
       }).first();
-      res.json({autorizado: (usuario.email !== null) });
+      res.json({autorizado: (usuario.email !== null), id: usuario.id_usuario});
     } catch (error) {
       res.status(500).json({autorizado: false });
     }

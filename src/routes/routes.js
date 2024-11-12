@@ -3,7 +3,7 @@ const router = express.Router();
 const TaskController = require('../controllers/TaskController');
 
 // Rotas para login
-router.get('/login', TaskController.login);
+router.post('/login', TaskController.login);
 
 // Rotas para usuários
 router.post('/usuarios', TaskController.novoUsuario);

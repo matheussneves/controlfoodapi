@@ -170,6 +170,8 @@ class TaskController {
     }
   }
 
+  //estoque
+
   static async novoEstoque(req, res) {
     const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
     try {
@@ -230,6 +232,8 @@ class TaskController {
     }
   }
 
+  //prato
+
   static async novoPrato(req, res) {
     const { nome, descricao, preco, tempo_preparo } = req.body;
     try {
@@ -280,6 +284,7 @@ class TaskController {
     }
   }
 
+   //cliente
   static async novoCliente(req, res) {
     const { nome, telefone, endereco } = req.body;
     try {
@@ -330,7 +335,7 @@ class TaskController {
     }
   }
 
-
+ //entregador
   static async novoEntregador(req, res) {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
@@ -381,64 +386,69 @@ class TaskController {
     }
   }
 
-
-// Entrega
-
-static async novaEntrega(req, res) {
-  const { data_retirada, data_entrega, endereco } = req.body;
-  try {
-    await db('entrega').insert({ data_retirada, data_entrega, endereco });
-    res.status(201).send('Entrega criada');
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar entrega' });
-  }
-}
-
-static async listarEntregas(req, res) {
-  try {
-    const entregas = await db('entrega').select('*');
-    res.json(entregas);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar entregas' });
-  }
-}
-
-static async listarUmaEntrega(req, res) {
-  const { id } = req.params;
-  try {
-    const entrega = await db('entrega').where('id_entrega', id).first();
-    res.json(entrega);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar entrega' });
-  }
-}
-
-static async atualizarEntrega(req, res) {
-  const { id } = req.params;
-  const { data_retirada, data_entrega, endereco } = req.body;
-  try {
-    await db('entrega').where('id_entrega', id).update({ data_retirada, data_entrega, endereco });
-    res.send('Entrega atualizada');
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar entrega' });
-  }
-}
-
-static async removerEntrega(req, res) {
-  const { id } = req.params;
-  try {
-    await db('entrega').where('id_entrega', id).del();
-    res.send('Entrega removida');
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao remover entrega' });
-  }
-}
-  // Pedidos
-
-  static async novoPedido(req, res) {
-    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
+ //entrega
+  static async novaEntrega(req, res) {
+    const { data_retirada, data_entrega, endereco } = req.body;
     try {
-      await db('pedidos').insert({ cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega });
+      await db('entrega').insert({ data_retirada, data_entrega, endereco });
+      res.status(201).send('Entrega criada');
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao criar entrega' });
+    }
+  }
+
+  static async listarEntregas(req, res) {
+    try {
+      const entregas = await db('entrega').select('*');
+      res.json(entregas);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar entregas' });
+    }
+  }
+
+  static async listarUmaEntrega(req, res) {
+    const { id } = req.params;
+    try {
+      const entrega = await db('entrega').where('id_entrega', id).first();
+      res.json(entrega);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar entrega' });
+    }
+  }
+
+  static async atualizarEntrega(req, res) {
+    const { id } = req.params;
+    const { data_retirada, data_entrega, endereco } = req.body;
+    try {
+      await db('entrega').where('id_entrega', id).update({ data_retirada, data_entrega, endereco });
+      res.send('Entrega atualizada');
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao atualizar entrega' });
+    }
+  }
+
+  static async removerEntrega(req, res) {
+    const { id } = req.params;
+    try {
+      await db('entrega').where('id_entrega', id).del();
+      res.send('Entrega removida');
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao remover entrega' });
+    }
+  }
+
+  //pedido
+  static async novoPedido(req, res) {
+    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado } = req.body;
+    try {
+      await db('pedidos').insert({
+        cliente_id_cliente,
+        entregador_id_entregador,
+        usuarios_id_usuario,
+        entrega_id_entrega,
+        data_pedido,
+        tempo_estimado
+      });
       res.status(201).send('Pedido criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar pedido' });
@@ -466,9 +476,16 @@ static async removerEntrega(req, res) {
 
   static async atualizarPedido(req, res) {
     const { id } = req.params;
-    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
+    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado } = req.body;
     try {
-      await db('pedidos').where('id_pedido', id).update({ cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega });
+      await db('pedidos').where('id_pedido', id).update({
+        cliente_id_cliente,
+        entregador_id_entregador,
+        usuarios_id_usuario,
+        entrega_id_entrega,
+        data_pedido,
+        tempo_estimado
+      });
       res.send('Pedido atualizado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar pedido' });
@@ -484,6 +501,7 @@ static async removerEntrega(req, res) {
       res.status(500).json({ error: 'Erro ao remover pedido' });
     }
   }
+
 }
 
 module.exports = TaskController;

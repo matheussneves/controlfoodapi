@@ -171,6 +171,8 @@ class TaskController {
     }
   }
 
+  //estoque
+
   static async novoEstoque(req, res) {
     const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
     try {
@@ -231,6 +233,8 @@ class TaskController {
     }
   }
 
+  //prato
+
   static async novoPrato(req, res) {
     const { nome, descricao, preco, tempo } = req.body;
     try {
@@ -281,6 +285,7 @@ class TaskController {
     }
   }
 
+   //cliente
   static async novoCliente(req, res) {
     const { nome, telefone, endereco } = req.body;
     try {
@@ -331,57 +336,7 @@ class TaskController {
     }
   }
 
-
-  static async novoEntregador(req, res) {
-    const { nome, telefone, veiculo, placa, senha } = req.body;
-    try {
-      await db('entregador').insert({ nome, telefone, veiculo, placa, senha });
-      res.status(201).send('Entregador criado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao criar entregador' });
-    }
-  }
-
-  static async listarEntregadores(req, res) {
-    try {
-      const entregadores = await db('entregador').select('*');
-      res.json(entregadores);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar entregadores' });
-    }
-  }
-
-  static async listarUmEntregador(req, res) {
-    const { id } = req.params;
-    try {
-      const entregador = await db('entregador').where('id_entregador', id).first();
-      res.json(entregador);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar entregador' });
-    }
-  }
-
-  static async atualizarEntregador(req, res) {
-    const { id } = req.params;
-    const { nome, telefone, veiculo, placa, senha } = req.body;
-    try {
-      await db('entregador').where('id_entregador', id).update({ nome, telefone, veiculo, placa, senha });
-      res.send(true);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao atualizar entregador' });
-    }
-  }
-
-  static async removerEntregador(req, res) {
-    const { id } = req.params;
-    try {
-      await db('entregador').where('id_entregador', id).del();
-      res.send(true);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao remover entregador' });
-    }
-  }
-
+ //entregador
   static async novoEntregador(req, res) {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
@@ -432,6 +387,7 @@ class TaskController {
     }
   }
 
+ //entrega
   static async novaEntrega(req, res) {
     const { data_retirada, data_entrega, endereco } = req.body;
     try {

@@ -41,6 +41,7 @@ class TaskController {
     const { id } = req.params;
     try {
       const usuario = await db('usuarios').where('id_usuario', id).first();
+      console.log(usuario)
       res.json(usuario);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar usuário' });
@@ -52,7 +53,7 @@ class TaskController {
     const { nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque } = req.body;
     try {
       await db('usuarios').where('id_usuario', id).update({ nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque });
-      res.send('Usuário atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar usuário' });
     }
@@ -62,7 +63,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('usuarios').where('id_usuario', id).del();
-      res.send('Usuário removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover usuário' });
     }
@@ -103,7 +104,7 @@ class TaskController {
     const { descricao, contem_alergicos, informacoes_nutricionais } = req.body;
     try {
       await db('ingrediente').where('Id_ingrediente', id).update({ descricao, contem_alergicos, informacoes_nutricionais });
-      res.send('Ingrediente atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar ingrediente' });
     }
@@ -113,7 +114,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('ingrediente').where('Id_ingrediente', id).del();
-      res.send('Ingrediente removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover ingrediente' });
     }
@@ -154,7 +155,7 @@ class TaskController {
     const { data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
     try {
       await db('historico_entrada').where('id_historico', id).update({ data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente });
-      res.send('Histórico de entrada atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar histórico de entrada' });
     }
@@ -164,7 +165,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('historico_entrada').where('id_historico', id).del();
-      res.send('Histórico de entrada removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover histórico de entrada' });
     }
@@ -214,7 +215,7 @@ class TaskController {
         quantidade_minima,
         ingrediente_Id_ingrediente
       });
-      res.send('Estoque atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar estoque' });
     }
@@ -224,16 +225,16 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('estoque').where({ id_estoque: id }).del();
-      res.send('Estoque removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover estoque' });
     }
   }
 
   static async novoPrato(req, res) {
-    const { nome, descricao, preco, tempo_preparo } = req.body;
+    const { nome, descricao, preco, tempo } = req.body;
     try {
-      await db('pratos').insert({ nome, descricao, preco, tempo_preparo });
+      await db('pratos').insert({ nome, descricao, preco, tempo });
       res.status(201).send('Prato criado');
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar prato' });
@@ -261,10 +262,10 @@ class TaskController {
 
   static async atualizarPrato(req, res) {
     const { id } = req.params;
-    const { nome, descricao, preco, tempo_preparo } = req.body;
+    const { nome, descricao, preco, tempo } = req.body;
     try {
-      await db('pratos').where({ id_prato: id }).update({ nome, descricao, preco, tempo_preparo });
-      res.send('Prato atualizado');
+      await db('pratos').where({ id_prato: id }).update({ nome, descricao, preco, tempo });
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar prato' });
     }
@@ -274,7 +275,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('pratos').where({ id_prato: id }).del();
-      res.send('Prato removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover prato' });
     }
@@ -284,7 +285,7 @@ class TaskController {
     const { nome, telefone, endereco } = req.body;
     try {
       await db('cliente').insert({ nome, telefone, endereco });
-      res.status(201).send('Cliente criado');
+      res.status(201).send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar cliente' });
     }
@@ -314,7 +315,7 @@ class TaskController {
     const { nome, telefone, endereco } = req.body;
     try {
       await db('cliente').where({ id_cliente: id }).update({ nome, telefone, endereco });
-      res.send('Cliente atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar cliente' });
     }
@@ -324,7 +325,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('cliente').where({ id_cliente: id }).del();
-      res.send('Cliente removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover cliente' });
     }
@@ -365,7 +366,7 @@ class TaskController {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
       await db('entregador').where('id_entregador', id).update({ nome, telefone, veiculo, placa, senha });
-      res.send('Entregador atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar entregador' });
     }
@@ -375,7 +376,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('entregador').where('id_entregador', id).del();
-      res.send('Entregador removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover entregador' });
     }
@@ -385,7 +386,7 @@ class TaskController {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
       await db('entregador').insert({ nome, telefone, veiculo, placa, senha });
-      res.status(201).send('Entregador criado');
+      res.status(201).send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar entregador' });
     }
@@ -415,7 +416,7 @@ class TaskController {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
       await db('entregador').where('id_entregador', id).update({ nome, telefone, veiculo, placa, senha });
-      res.send('Entregador atualizado');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar entregador' });
     }
@@ -425,7 +426,7 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('entregador').where('id_entregador', id).del();
-      res.send('Entregador removido');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover entregador' });
     }
@@ -435,7 +436,7 @@ class TaskController {
     const { data_retirada, data_entrega, endereco } = req.body;
     try {
       await db('entrega').insert({ data_retirada, data_entrega, endereco });
-      res.status(201).send('Entrega criada');
+      res.status(201).send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar entrega' });
     }
@@ -465,7 +466,7 @@ class TaskController {
     const { data_retirada, data_entrega, endereco } = req.body;
     try {
       await db('entrega').where('id_entrega', id).update({ data_retirada, data_entrega, endereco });
-      res.send('Entrega atualizada');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao atualizar entrega' });
     }
@@ -475,82 +476,157 @@ class TaskController {
     const { id } = req.params;
     try {
       await db('entrega').where('id_entrega', id).del();
-      res.send('Entrega removida');
+      res.send(true);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao remover entrega' });
     }
   }
-  static async novoPedido(req, res) {
-    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado } = req.body;
-    try {
-      await db('pedidos').insert({
-        cliente_id_cliente,
-        entregador_id_entregador,
-        usuarios_id_usuario,
-        entrega_id_entrega,
-        data_pedido,
-        tempo_estimado
-      });
-      res.status(201).send('Pedido criado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao criar pedido' });
+
+    // Cria um novo pedido e associa os pratos ao pedido
+    static async novoPedido(req, res) {
+      const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado, pratos } = req.body;
+  
+      // Inicia uma transação para garantir a integridade dos dados
+      const trx = await db.transaction();
+  
+      try {
+        // Insere o pedido na tabela 'pedidos'
+        const [pedidoId] = await trx('pedidos').insert({
+          cliente_id_cliente,
+          entregador_id_entregador,
+          usuarios_id_usuario,
+          entrega_id_entrega,
+          data_pedido,
+          tempo_estimado
+        }).returning('id_pedido');
+  
+        // Insere os pratos na tabela de junção 'pedidos_has_pratos'
+        if (pratos && pratos.length > 0) {
+          const pratosAssociados = pratos.map(pratoId => ({
+            pedidos_id_pedido: pedidoId[0],
+            pratos_id_prato: pratoId
+          }));
+          await trx('pedidos_has_pratos').insert(pratosAssociados);
+        }
+  
+        // Finaliza a transação
+        await trx.commit();
+        res.status(201).send(true);
+      } catch (error) {
+        await trx.rollback();
+        res.status(500).json({ error: 'Erro ao criar pedido' });
+      }
+    }
+  
+    // Lista todos os pedidos com informações do cliente, entregador, usuário e pratos associados
+    static async listarPedidos(req, res) {
+      try {
+        const pedidos = await db('pedidos')
+          .leftJoin('pedidos_has_pratos', 'pedidos.id_pedido', 'pedidos_has_pratos.pedidos_id_pedido')
+          .leftJoin('pratos', 'pedidos_has_pratos.pratos_id_prato', 'pratos.id_prato')
+          .leftJoin('cliente', 'pedidos.cliente_id_cliente', 'cliente.id_cliente')
+          .leftJoin('entregador', 'pedidos.entregador_id_entregador', 'entregador.id_entregador')
+          .leftJoin('usuarios', 'pedidos.usuarios_id_usuario', 'usuarios.id_usuario')
+          .select(
+            'pedidos.id_pedido', 'pedidos.data_pedido', 'pedidos.tempo_estimado',
+            'cliente.nome as cliente_nome', 
+            'entregador.nome as entregador_nome',
+            'usuarios.nome as usuario_nome', 
+            'pratos.nome as prato_nome', 'pratos.descricao as prato_descricao', 'pratos.preco as prato_preco'
+          );
+  
+        res.json(pedidos);
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: 'Erro ao buscar pedidos' });
+      }
+    }
+  
+    // Lista um pedido específico com informações do cliente, entregador, usuário e pratos associados
+    static async listarUmPedido(req, res) {
+      const { id } = req.params;
+      try {
+        const pedido = await db('pedidos')
+          .leftJoin('pedidos_has_pratos', 'pedidos.id_pedido', 'pedidos_has_pratos.pedidos_id_pedido')
+          .leftJoin('pratos', 'pedidos_has_pratos.pratos_id_prato', 'pratos.id_prato')
+          .leftJoin('cliente', 'pedidos.cliente_id_cliente', 'cliente.id_cliente')
+          .leftJoin('entregador', 'pedidos.entregador_id_entregador', 'entregador.id_entregador')
+          .leftJoin('usuarios', 'pedidos.usuarios_id_usuario', 'usuarios.id_usuario')
+          .where('pedidos.id_pedido', id)
+          .select(
+            'pedidos.id_pedido', 'pedidos.data_pedido', 'pedidos.tempo_estimado',
+            'cliente.nome as cliente_nome',
+            'entregador.nome as entregador_nome', 
+            'usuarios.nome as usuario_nome', 
+            'pratos.nome as prato_nome', 'pratos.descricao as prato_descricao', 'pratos.preco as prato_preco'
+          );
+  
+        res.json(pedido);
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar pedido' });
+      }
+    }
+  
+    // Atualiza um pedido e seus pratos associados
+    static async atualizarPedido(req, res) {
+      const { id } = req.params;
+      const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado, pratos } = req.body;
+  
+      // Inicia uma transação para garantir a integridade dos dados
+      const trx = await db.transaction();
+  
+      try {
+        // Atualiza o pedido na tabela 'pedidos'
+        await trx('pedidos').where('id_pedido', id).update({
+          cliente_id_cliente,
+          entregador_id_entregador,
+          usuarios_id_usuario,
+          entrega_id_entrega,
+          data_pedido,
+          tempo_estimado
+        });
+  
+        // Remove os pratos antigos e insere os novos na tabela de junção 'pedidos_has_pratos'
+        await trx('pedidos_has_pratos').where('pedidos_id_pedido', id).del();
+  
+        if (pratos && pratos.length > 0) {
+          const pratosAssociados = pratos.map(pratoId => ({
+            pedidos_id_pedido: id,
+            pratos_id_prato: pratoId
+          }));
+          await trx('pedidos_has_pratos').insert(pratosAssociados);
+        }
+  
+        // Finaliza a transação
+        await trx.commit();
+        res.send(true);
+      } catch (error) {
+        await trx.rollback();
+        res.status(500).json({ error: 'Erro ao atualizar pedido' });
+      }
+    }
+  
+    // Remove um pedido e seus pratos associados
+    static async removerPedido(req, res) {
+      const { id } = req.params;
+  
+      // Inicia uma transação para garantir a integridade dos dados
+      const trx = await db.transaction();
+  
+      try {
+        // Remove os pratos associados ao pedido
+        await trx('pedidos_has_pratos').where('pedidos_id_pedido', id).del();
+  
+        // Remove o pedido na tabela 'pedidos'
+        await trx('pedidos').where('id_pedido', id).del();
+  
+        // Finaliza a transação
+        await trx.commit();
+        res.send(true);
+      } catch (error) {
+        await trx.rollback();
+        res.status(500).json({ error: 'Erro ao remover pedido' });
+      }
     }
   }
-
-  static async listarPedidos(req, res) {
-    try {
-      const pedidos = await db('pedidos').select('*');
-      res.json(pedidos);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar pedidos' });
-    }
-  }
-
-  static async listarUmPedido(req, res) {
-    const { id } = req.params;
-    try {
-      const pedido = await db('pedidos').where('id_pedido', id).first();
-      res.json(pedido);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar pedido' });
-    }
-  }
-
-  static async atualizarPedido(req, res) {
-    const { id } = req.params;
-    const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado } = req.body;
-    try {
-      await db('pedidos').where('id_pedido', id).update({
-        cliente_id_cliente,
-        entregador_id_entregador,
-        usuarios_id_usuario,
-        entrega_id_entrega,
-        data_pedido,
-        tempo_estimado
-      });
-      res.send('Pedido atualizado');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao atualizar pedido' });
-    }
-  }
-
-  static async removerPedido(req, res) {
-    const { id } = req.params;
-    try {
-      await db('pedidos').where('id_pedido', id).del();
-      res.send('Pedido removido');
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao remover pedido' });
-    }
-  }
-
-
-
-
-
-
-
-
-}
-
 module.exports = TaskController;

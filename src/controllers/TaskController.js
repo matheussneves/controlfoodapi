@@ -1,7 +1,6 @@
 const db = require('../database/connection');
 
 class TaskController {
-  //login
 
   static async login(req, res) {
     const { login,senha } = req.body;
@@ -17,7 +16,6 @@ class TaskController {
     }
   }
 
-  // Usuários
   static async novoUsuario(req, res) {
     const { nome, email, senha, acesso_criar_usuario, acesso_dashboard, acesso_criar_pedido, acesso_estoque } = req.body;
     try {
@@ -69,7 +67,6 @@ class TaskController {
     }
   }
 
-  // Ingredientes
   static async novoIngrediente(req, res) {
     const { descricao, contem_alergicos, informacoes_nutricionais } = req.body;
     try {
@@ -120,7 +117,6 @@ class TaskController {
     }
   }
 
-  // Histórico de entrada
   static async novoHistorico(req, res) {
     const { data_entrada, quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
     try {
@@ -170,8 +166,6 @@ class TaskController {
       res.status(500).json({ error: 'Erro ao remover histórico de entrada' });
     }
   }
-
-  //estoque
 
   static async novoEstoque(req, res) {
     const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
@@ -233,8 +227,6 @@ class TaskController {
     }
   }
 
-  //prato
-
   static async novoPrato(req, res) {
     const { nome, descricao, preco, tempo } = req.body;
     try {
@@ -285,7 +277,6 @@ class TaskController {
     }
   }
 
-   //cliente
   static async novoCliente(req, res) {
     const { nome, telefone, endereco } = req.body;
     try {
@@ -336,7 +327,6 @@ class TaskController {
     }
   }
 
- //entregador
   static async novoEntregador(req, res) {
     const { nome, telefone, veiculo, placa, senha } = req.body;
     try {
@@ -387,7 +377,6 @@ class TaskController {
     }
   }
 
- //entrega
   static async novaEntrega(req, res) {
     const { data_retirada, data_entrega, endereco } = req.body;
     try {
@@ -438,15 +427,11 @@ class TaskController {
     }
   }
 
-    // Cria um novo pedido e associa os pratos ao pedido
     static async novoPedido(req, res) {
       const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado, pratos } = req.body;
-  
-      // Inicia uma transação para garantir a integridade dos dados
       const trx = await db.transaction();
   
       try {
-        // Insere o pedido na tabela 'pedidos'
         const [pedidoId] = await trx('pedidos').insert({
           cliente_id_cliente,
           entregador_id_entregador,
@@ -456,7 +441,6 @@ class TaskController {
           tempo_estimado
         }).returning('id_pedido');
   
-        // Insere os pratos na tabela de junção 'pedidos_has_pratos'
         if (pratos && pratos.length > 0) {
           const pratosAssociados = pratos.map(pratoId => ({
             pedidos_id_pedido: pedidoId[0],
@@ -464,8 +448,7 @@ class TaskController {
           }));
           await trx('pedidos_has_pratos').insert(pratosAssociados);
         }
-  
-        // Finaliza a transação
+
         await trx.commit();
         res.status(201).send(true);
       } catch (error) {
@@ -473,8 +456,7 @@ class TaskController {
         res.status(500).json({ error: 'Erro ao criar pedido' });
       }
     }
-  
-    // Lista todos os pedidos com informações do cliente, entregador, usuário e pratos associados
+
     static async listarPedidos(req, res) {
       try {
         const pedidos = await db('pedidos')
@@ -498,7 +480,6 @@ class TaskController {
       }
     }
   
-    // Lista um pedido específico com informações do cliente, entregador, usuário e pratos associados
     static async listarUmPedido(req, res) {
       const { id } = req.params;
       try {
@@ -523,16 +504,13 @@ class TaskController {
       }
     }
   
-    // Atualiza um pedido e seus pratos associados
     static async atualizarPedido(req, res) {
       const { id } = req.params;
       const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, entrega_id_entrega, data_pedido, tempo_estimado, pratos } = req.body;
   
-      // Inicia uma transação para garantir a integridade dos dados
       const trx = await db.transaction();
   
       try {
-        // Atualiza o pedido na tabela 'pedidos'
         await trx('pedidos').where('id_pedido', id).update({
           cliente_id_cliente,
           entregador_id_entregador,
@@ -542,7 +520,6 @@ class TaskController {
           tempo_estimado
         });
   
-        // Remove os pratos antigos e insere os novos na tabela de junção 'pedidos_has_pratos'
         await trx('pedidos_has_pratos').where('pedidos_id_pedido', id).del();
   
         if (pratos && pratos.length > 0) {
@@ -553,7 +530,6 @@ class TaskController {
           await trx('pedidos_has_pratos').insert(pratosAssociados);
         }
   
-        // Finaliza a transação
         await trx.commit();
         res.send(true);
       } catch (error) {
@@ -561,22 +537,17 @@ class TaskController {
         res.status(500).json({ error: 'Erro ao atualizar pedido' });
       }
     }
-  
-    // Remove um pedido e seus pratos associados
+
     static async removerPedido(req, res) {
       const { id } = req.params;
-  
-      // Inicia uma transação para garantir a integridade dos dados
+
       const trx = await db.transaction();
   
       try {
-        // Remove os pratos associados ao pedido
         await trx('pedidos_has_pratos').where('pedidos_id_pedido', id).del();
   
-        // Remove o pedido na tabela 'pedidos'
         await trx('pedidos').where('id_pedido', id).del();
-  
-        // Finaliza a transação
+
         await trx.commit();
         res.send(true);
       } catch (error) {

@@ -315,7 +315,7 @@ router.delete('/ingredientes/:id', TaskController.removerIngrediente);
  * @swagger
  * /estoque:
  *   post:
- *     summary: Adiciona um novo item ao estoque
+ *     summary: Cria um novo item no estoque
  *     tags: [Estoque]
  *     requestBody:
  *       required: true
@@ -324,16 +324,22 @@ router.delete('/ingredientes/:id', TaskController.removerIngrediente);
  *           schema:
  *             type: object
  *             required:
- *               - ingredienteId
  *               - quantidade
+ *               - medida
+ *               - quantidade_minima
+ *               - ingrediente_Id_ingrediente
  *             properties:
- *               ingredienteId:
- *                 type: integer
  *               quantidade:
  *                 type: number
+ *               medida:
+ *                 type: string
+ *               quantidade_minima:
+ *                 type: number
+ *               ingrediente_Id_ingrediente:
+ *                 type: integer
  *     responses:
  *       201:
- *         description: Item adicionado ao estoque com sucesso
+ *         description: Item de estoque criado com sucesso
  *       400:
  *         description: Dados inválidos
  */
@@ -365,9 +371,9 @@ router.get('/estoque', TaskController.listarEstoques);
  *           type: integer
  *     responses:
  *       200:
- *         description: Item encontrado
+ *         description: Item de estoque encontrado
  *       404:
- *         description: Item não encontrado
+ *         description: Item de estoque não encontrado
  */
 router.get('/estoque/:id', TaskController.listarUmEstoque);
 
@@ -375,7 +381,7 @@ router.get('/estoque/:id', TaskController.listarUmEstoque);
  * @swagger
  * /estoque/{id}:
  *   put:
- *     summary: Atualiza um item do estoque
+ *     summary: Atualiza um item do estoque por ID
  *     tags: [Estoque]
  *     parameters:
  *       - in: path
@@ -389,16 +395,25 @@ router.get('/estoque/:id', TaskController.listarUmEstoque);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - quantidade
+ *               - medida
+ *               - quantidade_minima
+ *               - ingrediente_Id_ingrediente
  *             properties:
- *               ingredienteId:
- *                 type: integer
  *               quantidade:
  *                 type: number
+ *               medida:
+ *                 type: string
+ *               quantidade_minima:
+ *                 type: number
+ *               ingrediente_Id_ingrediente:
+ *                 type: integer
  *     responses:
  *       200:
- *         description: Item atualizado com sucesso
+ *         description: Item de estoque atualizado com sucesso
  *       404:
- *         description: Item não encontrado
+ *         description: Item de estoque não encontrado
  */
 router.put('/estoque/:id', TaskController.atualizarEstoque);
 
@@ -406,7 +421,7 @@ router.put('/estoque/:id', TaskController.atualizarEstoque);
  * @swagger
  * /estoque/{id}:
  *   delete:
- *     summary: Remove um item do estoque
+ *     summary: Remove um item do estoque por ID
  *     tags: [Estoque]
  *     parameters:
  *       - in: path
@@ -416,9 +431,9 @@ router.put('/estoque/:id', TaskController.atualizarEstoque);
  *           type: integer
  *     responses:
  *       200:
- *         description: Item removido com sucesso
+ *         description: Item de estoque removido com sucesso
  *       404:
- *         description: Item não encontrado
+ *         description: Item de estoque não encontrado
  */
 router.delete('/estoque/:id', TaskController.removerEstoque);
 
@@ -437,11 +452,17 @@ router.delete('/estoque/:id', TaskController.removerEstoque);
  *             type: object
  *             required:
  *               - nome
+ *               - descricao
  *               - preco
+ *               - tempo
  *             properties:
  *               nome:
  *                 type: string
+ *               descricao:
+ *                 type: string
  *               preco:
+ *                 type: number
+ *               tempo:
  *                 type: number
  *     responses:
  *       201:
@@ -487,7 +508,7 @@ router.get('/pratos/:id', TaskController.listarUmPrato);
  * @swagger
  * /pratos/{id}:
  *   put:
- *     summary: Atualiza um prato existente
+ *     summary: Atualiza um prato por ID
  *     tags: [Pratos]
  *     parameters:
  *       - in: path
@@ -501,10 +522,19 @@ router.get('/pratos/:id', TaskController.listarUmPrato);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - nome
+ *               - descricao
+ *               - preco
+ *               - tempo
  *             properties:
  *               nome:
  *                 type: string
+ *               descricao:
+ *                 type: string
  *               preco:
+ *                 type: number
+ *               tempo:
  *                 type: number
  *     responses:
  *       200:
@@ -518,7 +548,7 @@ router.put('/pratos/:id', TaskController.atualizarPrato);
  * @swagger
  * /pratos/{id}:
  *   delete:
- *     summary: Remove um prato pelo ID
+ *     summary: Remove um prato por ID
  *     tags: [Pratos]
  *     parameters:
  *       - in: path
@@ -550,10 +580,13 @@ router.delete('/pratos/:id', TaskController.removerPrato);
  *             required:
  *               - nome
  *               - telefone
+ *               - endereco
  *             properties:
  *               nome:
  *                 type: string
  *               telefone:
+ *                 type: string
+ *               endereco:
  *                 type: string
  *     responses:
  *       201:
@@ -599,7 +632,7 @@ router.get('/clientes/:id', TaskController.listarUmCliente);
  * @swagger
  * /clientes/{id}:
  *   put:
- *     summary: Atualiza um cliente existente
+ *     summary: Atualiza um cliente por ID
  *     tags: [Clientes]
  *     parameters:
  *       - in: path
@@ -613,10 +646,16 @@ router.get('/clientes/:id', TaskController.listarUmCliente);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - nome
+ *               - telefone
+ *               - endereco
  *             properties:
  *               nome:
  *                 type: string
  *               telefone:
+ *                 type: string
+ *               endereco:
  *                 type: string
  *     responses:
  *       200:
@@ -662,10 +701,19 @@ router.delete('/clientes/:id', TaskController.removerCliente);
  *             required:
  *               - nome
  *               - telefone
+ *               - veiculo
+ *               - placa
+ *               - senha
  *             properties:
  *               nome:
  *                 type: string
  *               telefone:
+ *                 type: string
+ *               veiculo:
+ *                 type: string
+ *               placa:
+ *                 type: string
+ *               senha:
  *                 type: string
  *     responses:
  *       201:
@@ -711,7 +759,7 @@ router.get('/entregadores/:id', TaskController.listarUmEntregador);
  * @swagger
  * /entregadores/{id}:
  *   put:
- *     summary: Atualiza um entregador existente
+ *     summary: Atualiza um entregador por ID
  *     tags: [Entregadores]
  *     parameters:
  *       - in: path
@@ -725,10 +773,22 @@ router.get('/entregadores/:id', TaskController.listarUmEntregador);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - nome
+ *               - telefone
+ *               - veiculo
+ *               - placa
+ *               - senha
  *             properties:
  *               nome:
  *                 type: string
  *               telefone:
+ *                 type: string
+ *               veiculo:
+ *                 type: string
+ *               placa:
+ *                 type: string
+ *               senha:
  *                 type: string
  *     responses:
  *       200:
@@ -742,7 +802,7 @@ router.put('/entregadores/:id', TaskController.atualizarEntregador);
  * @swagger
  * /entregadores/{id}:
  *   delete:
- *     summary: Remove um entregador pelo ID
+ *     summary: Remove um entregador por ID
  *     tags: [Entregadores]
  *     parameters:
  *       - in: path
@@ -772,12 +832,25 @@ router.delete('/entregadores/:id', TaskController.removerEntregador);
  *           schema:
  *             type: object
  *             required:
- *               - acao
- *               - usuarioId
+ *               - quantidade
+ *               - preco_pago
+ *               - data_vencimento
+ *               - marca
+ *               - medida
+ *               - ingrediente_Id_ingrediente
  *             properties:
- *               acao:
+ *               quantidade:
+ *                 type: number
+ *               preco_pago:
+ *                 type: number
+ *               data_vencimento:
  *                 type: string
- *               usuarioId:
+ *                 format: date
+ *               marca:
+ *                 type: string
+ *               medida:
+ *                 type: string
+ *               ingrediente_Id_ingrediente:
  *                 type: integer
  *     responses:
  *       201:
@@ -823,7 +896,7 @@ router.get('/historico/:id', TaskController.listarUmHistorico);
  * @swagger
  * /historico/{id}:
  *   put:
- *     summary: Atualiza um registro de histórico existente
+ *     summary: Atualiza um registro de histórico por ID
  *     tags: [Histórico]
  *     parameters:
  *       - in: path
@@ -837,10 +910,26 @@ router.get('/historico/:id', TaskController.listarUmHistorico);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - quantidade
+ *               - preco_pago
+ *               - data_vencimento
+ *               - marca
+ *               - medida
+ *               - ingrediente_Id_ingrediente
  *             properties:
- *               acao:
+ *               quantidade:
+ *                 type: number
+ *               preco_pago:
+ *                 type: number
+ *               data_vencimento:
  *                 type: string
- *               usuarioId:
+ *                 format: date
+ *               marca:
+ *                 type: string
+ *               medida:
+ *                 type: string
+ *               ingrediente_Id_ingrediente:
  *                 type: integer
  *     responses:
  *       200:
@@ -854,7 +943,7 @@ router.put('/historico/:id', TaskController.atualizarHistorico);
  * @swagger
  * /historico/{id}:
  *   delete:
- *     summary: Remove um registro de histórico pelo ID
+ *     summary: Remove um registro de histórico por ID
  *     tags: [Histórico]
  *     parameters:
  *       - in: path
@@ -884,20 +973,26 @@ router.delete('/historico/:id', TaskController.removerHistorico);
  *           schema:
  *             type: object
  *             required:
- *               - clienteId
- *               - pratos
+ *               - cliente_id_cliente
+ *               - entregador_id_entregador
+ *               - usuarios_id_usuario
+ *               - data_pedido
+ *               - tempo_estimado
+ *               - entrega_id_entrega
  *             properties:
- *               clienteId:
+ *               cliente_id_cliente:
  *                 type: integer
- *               pratos:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     pratoId:
- *                       type: integer
- *                     quantidade:
- *                       type: integer
+ *               entregador_id_entregador:
+ *                 type: integer
+ *               usuarios_id_usuario:
+ *                 type: integer
+ *               data_pedido:
+ *                 type: string
+ *                 format: date
+ *               tempo_estimado:
+ *                 type: integer
+ *               entrega_id_entrega:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Pedido criado com sucesso
@@ -942,7 +1037,7 @@ router.get('/pedidos/:id', TaskController.listarUmPedido);
  * @swagger
  * /pedidos/{id}:
  *   put:
- *     summary: Atualiza um pedido existente
+ *     summary: Atualiza um pedido por ID
  *     tags: [Pedidos]
  *     parameters:
  *       - in: path
@@ -956,18 +1051,27 @@ router.get('/pedidos/:id', TaskController.listarUmPedido);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - cliente_id_cliente
+ *               - entregador_id_entregador
+ *               - usuarios_id_usuario
+ *               - data_pedido
+ *               - tempo_estimado
+ *               - entrega_id_entrega
  *             properties:
- *               clienteId:
+ *               cliente_id_cliente:
  *                 type: integer
- *               pratos:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     pratoId:
- *                       type: integer
- *                     quantidade:
- *                       type: integer
+ *               entregador_id_entregador:
+ *                 type: integer
+ *               usuarios_id_usuario:
+ *                 type: integer
+ *               data_pedido:
+ *                 type: string
+ *                 format: date
+ *               tempo_estimado:
+ *                 type: integer
+ *               entrega_id_entrega:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Pedido atualizado com sucesso
@@ -980,7 +1084,7 @@ router.put('/pedidos/:id', TaskController.atualizarPedido);
  * @swagger
  * /pedidos/{id}:
  *   delete:
- *     summary: Remove um pedido pelo ID
+ *     summary: Remove um pedido por ID
  *     tags: [Pedidos]
  *     parameters:
  *       - in: path
@@ -1010,15 +1114,17 @@ router.delete('/pedidos/:id', TaskController.removerPedido);
  *           schema:
  *             type: object
  *             required:
- *               - pedidoId
+ *               - data_retirada
+ *               - data_entrega
  *               - endereco
- *               - status
  *             properties:
- *               pedidoId:
- *                 type: integer
- *               endereco:
+ *               data_retirada:
  *                 type: string
- *               status:
+ *                 format: date
+ *               data_entrega:
+ *                 type: string
+ *                 format: date
+ *               endereco:
  *                 type: string
  *     responses:
  *       201:
@@ -1064,7 +1170,7 @@ router.get('/entregas/:id', TaskController.listarUmaEntrega);
  * @swagger
  * /entregas/{id}:
  *   put:
- *     summary: Atualiza uma entrega existente
+ *     summary: Atualiza uma entrega por ID
  *     tags: [Entregas]
  *     parameters:
  *       - in: path
@@ -1078,12 +1184,18 @@ router.get('/entregas/:id', TaskController.listarUmaEntrega);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - data_retirada
+ *               - data_entrega
+ *               - endereco
  *             properties:
- *               pedidoId:
- *                 type: integer
- *               endereco:
+ *               data_retirada:
  *                 type: string
- *               status:
+ *                 format: date
+ *               data_entrega:
+ *                 type: string
+ *                 format: date
+ *               endereco:
  *                 type: string
  *     responses:
  *       200:
@@ -1097,7 +1209,7 @@ router.put('/entregas/:id', TaskController.atualizarEntrega);
  * @swagger
  * /entregas/{id}:
  *   delete:
- *     summary: Remove uma entrega pelo ID
+ *     summary: Remove uma entrega por ID
  *     tags: [Entregas]
  *     parameters:
  *       - in: path

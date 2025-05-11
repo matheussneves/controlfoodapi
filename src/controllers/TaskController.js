@@ -243,16 +243,17 @@ async function removerIngrediente(req, res) {
 
 // Cria um novo item no estoque
 async function novoEstoque(req, res) {
-  const { ingredienteId, quantidade } = req.body;
+  const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
 
-  if (!ingredienteId || !quantidade) {
-    return res.status(400).json({ message: 'Os campos ingredienteId e quantidade são obrigatórios' });
+  // Validação para garantir que todos os campos sejam enviados
+  if (!quantidade || !medida || !quantidade_minima || !ingrediente_Id_ingrediente) {
+    return res.status(400).json({ message: 'Os campos quantidade, medida, quantidade_minima e ingrediente_Id_ingrediente são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO estoque (ingredienteId, quantidade) VALUES (?, ?)',
-      [ingredienteId, quantidade]
+      'INSERT INTO estoque (quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente) VALUES (?, ?, ?, ?)',
+      [quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente]
     );
     return res.status(201).json({ message: 'Item de estoque criado com sucesso', estoque: resultado });
   } catch (error) {
@@ -274,10 +275,10 @@ async function listarEstoques(req, res) {
 
 // Lista um item do estoque por ID
 async function listarUmEstoque(req, res) {
-  const { id } = req.params;
+  const { id } = req.params; // Extrai o ID dos parâmetros da URL
 
   try {
-    const [estoque] = await db.query('SELECT * FROM estoque WHERE id = ?', [id]);
+    const [estoque] = await db.query('SELECT * FROM estoque WHERE id_estoque = ?', [id]);
     if (estoque.length === 0) {
       return res.status(404).json({ message: 'Item de estoque não encontrado' });
     }
@@ -290,17 +291,19 @@ async function listarUmEstoque(req, res) {
 
 // Atualiza um item do estoque por ID
 async function atualizarEstoque(req, res) {
-  const { id } = req.params;
-  const { ingredienteId, quantidade } = req.body;
+  const { id } = req.params; // Extrai o ID dos parâmetros da URL
+  const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body; // Extrai os dados do corpo da requisição
 
-  if (!ingredienteId || !quantidade) {
-    return res.status(400).json({ message: 'Os campos ingredienteId e quantidade são obrigatórios' });
+  // Validação para garantir que todos os campos sejam enviados
+  if (!quantidade || !medida || !quantidade_minima || !ingrediente_Id_ingrediente) {
+    return res.status(400).json({ message: 'Os campos quantidade, medida, quantidade_minima e ingrediente_Id_ingrediente são obrigatórios' });
   }
 
   try {
+    // Atualização no banco de dados
     const [resultado] = await db.query(
-      'UPDATE estoque SET ingredienteId = ?, quantidade = ? WHERE id = ?',
-      [ingredienteId, quantidade, id]
+      'UPDATE estoque SET quantidade = ?, medida = ?, quantidade_minima = ?, ingrediente_Id_ingrediente = ? WHERE id_estoque = ?',
+      [quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -319,7 +322,7 @@ async function removerEstoque(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM estoque WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM estoque WHERE id_estoque = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Item de estoque não encontrado' });
     }
@@ -335,16 +338,22 @@ async function removerEstoque(req, res) {
 
 // Cria um novo prato
 async function novoPrato(req, res) {
-  const { nome, preco } = req.body;
+  const { nome, descricao, preco, tempo } = req.body;
 
-  if (!nome || !preco) {
-    return res.status(400).json({ message: 'Os campos nome e preco são obrigatórios' });
+  // Validação para garantir que todos os campos sejam enviados
+  if (!nome || !descricao || !preco || !tempo) {
+    return res.status(400).json({ message: 'Os campos nome, descricao, preco e tempo são obrigatórios' });
+  }
+
+  // Validação para garantir que o preço seja um número float
+  if (typeof preco !== 'number' || !Number.isFinite(preco)) {
+    return res.status(400).json({ message: 'O campo preco deve ser um número válido (float)' });
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO pratos (nome, preco) VALUES (?, ?)',
-      [nome, preco]
+      'INSERT INTO pratos (nome, descricao, preco, tempo) VALUES (?, ?, ?, ?)',
+      [nome, descricao, preco, tempo]
     );
     return res.status(201).json({ message: 'Prato criado com sucesso', prato: resultado });
   } catch (error) {
@@ -369,7 +378,7 @@ async function listarUmPrato(req, res) {
   const { id } = req.params;
 
   try {
-    const [prato] = await db.query('SELECT * FROM pratos WHERE id = ?', [id]);
+    const [prato] = await db.query('SELECT * FROM pratos WHERE id_prato = ?', [id]);
     if (prato.length === 0) {
       return res.status(404).json({ message: 'Prato não encontrado' });
     }
@@ -383,16 +392,22 @@ async function listarUmPrato(req, res) {
 // Atualiza um prato por ID
 async function atualizarPrato(req, res) {
   const { id } = req.params;
-  const { nome, preco } = req.body;
+  const { nome, descricao, preco, tempo } = req.body;
 
-  if (!nome || !preco) {
-    return res.status(400).json({ message: 'Os campos nome e preco são obrigatórios' });
+  // Validação para garantir que todos os campos sejam enviados
+  if (!nome || !descricao || !preco || !tempo) {
+    return res.status(400).json({ message: 'Os campos nome, descricao, preco e tempo são obrigatórios' });
+  }
+
+  // Validação para garantir que o preço seja um número float
+  if (typeof preco !== 'number' || !Number.isFinite(preco)) {
+    return res.status(400).json({ message: 'O campo preco deve ser um número válido (float)' });
   }
 
   try {
     const [resultado] = await db.query(
-      'UPDATE pratos SET nome = ?, preco = ? WHERE id = ?',
-      [nome, preco, id]
+      'UPDATE pratos SET nome = ?, descricao = ?, preco = ?, tempo = ? WHERE id_prato = ?',
+      [nome, descricao, preco, tempo, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -411,7 +426,7 @@ async function removerPrato(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM pratos WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM pratos WHERE id_prato = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Prato não encontrado' });
     }
@@ -485,16 +500,16 @@ async function removerIngredienteDoPrato(req, res) {
 
 // Cria um novo cliente
 async function novoCliente(req, res) {
-  const { nome, telefone } = req.body;
+  const { nome, telefone, endereco } = req.body;
 
-  if (!nome || !telefone) {
+  if (!nome || !telefone || !endereco) {
     return res.status(400).json({ message: 'Os campos nome e telefone são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO clientes (nome, telefone) VALUES (?, ?)',
-      [nome, telefone]
+      'INSERT INTO cliente (nome, telefone, endereco) VALUES (?, ?, ?)',
+      [nome, telefone, endereco]
     );
     return res.status(201).json({ message: 'Cliente criado com sucesso', cliente: resultado });
   } catch (error) {
@@ -506,7 +521,7 @@ async function novoCliente(req, res) {
 // Lista todos os clientes
 async function listarClientes(req, res) {
   try {
-    const [clientes] = await db.query('SELECT * FROM clientes');
+    const [clientes] = await db.query('SELECT * FROM cliente');
     return res.status(200).json(clientes);
   } catch (error) {
     console.error(error);
@@ -519,7 +534,7 @@ async function listarUmCliente(req, res) {
   const { id } = req.params;
 
   try {
-    const [cliente] = await db.query('SELECT * FROM clientes WHERE id = ?', [id]);
+    const [cliente] = await db.query('SELECT * FROM cliente WHERE id_cliente = ?', [id]);
     if (cliente.length === 0) {
       return res.status(404).json({ message: 'Cliente não encontrado' });
     }
@@ -533,16 +548,16 @@ async function listarUmCliente(req, res) {
 // Atualiza um cliente por ID
 async function atualizarCliente(req, res) {
   const { id } = req.params;
-  const { nome, telefone } = req.body;
+  const { nome, telefone, endereco } = req.body;
 
-  if (!nome || !telefone) {
+  if (!nome || !telefone || !endereco || !id) {
     return res.status(400).json({ message: 'Os campos nome e telefone são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'UPDATE clientes SET nome = ?, telefone = ? WHERE id = ?',
-      [nome, telefone, id]
+      'UPDATE cliente SET nome = ?, telefone = ?, endereco = ? WHERE id_cliente = ?',
+      [nome, telefone, endereco, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -561,7 +576,7 @@ async function removerCliente(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM clientes WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM cliente WHERE id_cliente = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Cliente não encontrado' });
     }
@@ -577,16 +592,16 @@ async function removerCliente(req, res) {
 
 // Cria um novo entregador
 async function novoEntregador(req, res) {
-  const { nome, telefone } = req.body;
+  const { nome, telefone, veiculo, placa, senha } = req.body;
 
-  if (!nome || !telefone) {
+  if (!nome || !telefone || !veiculo || !placa || !senha) {
     return res.status(400).json({ message: 'Os campos nome e telefone são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO entregadores (nome, telefone) VALUES (?, ?)',
-      [nome, telefone]
+      'INSERT INTO entregador (nome, telefone, veiculo, placa, senha ) VALUES (?, ?, ?, ?, ?)',
+      [nome, telefone, veiculo, placa, senha ]
     );
     return res.status(201).json({ message: 'Entregador criado com sucesso', entregador: resultado });
   } catch (error) {
@@ -598,7 +613,7 @@ async function novoEntregador(req, res) {
 // Lista todos os entregadores
 async function listarEntregadores(req, res) {
   try {
-    const [entregadores] = await db.query('SELECT * FROM entregadores');
+    const [entregadores] = await db.query('SELECT * FROM entregador');
     return res.status(200).json(entregadores);
   } catch (error) {
     console.error(error);
@@ -611,7 +626,7 @@ async function listarUmEntregador(req, res) {
   const { id } = req.params;
 
   try {
-    const [entregador] = await db.query('SELECT * FROM entregadores WHERE id = ?', [id]);
+    const [entregador] = await db.query('SELECT * FROM entregador WHERE id_entregador = ?', [id]);
     if (entregador.length === 0) {
       return res.status(404).json({ message: 'Entregador não encontrado' });
     }
@@ -625,16 +640,16 @@ async function listarUmEntregador(req, res) {
 // Atualiza um entregador por ID
 async function atualizarEntregador(req, res) {
   const { id } = req.params;
-  const { nome, telefone } = req.body;
+  const { nome, telefone, veiculo, placa, senha  } = req.body;
 
-  if (!nome || !telefone) {
+  if (!nome || !telefone || !veiculo || !placa || !senha || !id) {
     return res.status(400).json({ message: 'Os campos nome e telefone são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'UPDATE entregadores SET nome = ?, telefone = ? WHERE id = ?',
-      [nome, telefone, id]
+      'UPDATE entregador SET nome = ?, telefone = ?, veiculo = ?, placa = ?, senha = ? WHERE id_entregador = ?',
+      [nome, telefone, veiculo, placa, senha, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -653,7 +668,7 @@ async function removerEntregador(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM entregadores WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM entregador WHERE id_entregador = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Entregador não encontrado' });
     }
@@ -669,16 +684,16 @@ async function removerEntregador(req, res) {
 
 // Cria uma nova entrega
 async function novaEntrega(req, res) {
-  const { cliente_id, endereco, status } = req.body;
+  const { data_retirada, data_entrega, endereco } = req.body;
 
-  if (!cliente_id || !endereco || !status) {
+  if (!data_retirada || !data_entrega || !endereco) {
     return res.status(400).json({ message: 'Os campos cliente_id, endereco e status são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO entrega (cliente_id, endereco, status) VALUES (?, ?, ?)',
-      [cliente_id, endereco, status]
+      'INSERT INTO entrega (data_retirada, data_entrega, endereco ) VALUES (?, ?, ?)',
+      [ data_retirada, data_entrega, endereco ]
     );
     return res.status(201).json({ message: 'Entrega criada com sucesso', entrega: resultado });
   } catch (error) {
@@ -703,7 +718,7 @@ async function listarUmaEntrega(req, res) {
   const { id } = req.params;
 
   try {
-    const [entrega] = await db.query('SELECT * FROM entrega WHERE id = ?', [id]);
+    const [entrega] = await db.query('SELECT * FROM entrega WHERE id_entrega = ?', [id]);
     if (entrega.length === 0) {
       return res.status(404).json({ message: 'Entrega não encontrada' });
     }
@@ -717,16 +732,16 @@ async function listarUmaEntrega(req, res) {
 // Atualiza uma entrega por ID
 async function atualizarEntrega(req, res) {
   const { id } = req.params;
-  const { cliente_id, endereco, status } = req.body;
+  const { data_retirada, data_entrega, endereco } = req.body;
 
-  if (!cliente_id || !endereco || !status) {
+  if (!data_retirada || !data_entrega || !endereco || !id) {
     return res.status(400).json({ message: 'Os campos cliente_id, endereco e status são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'UPDATE entrega SET cliente_id = ?, endereco = ?, status = ? WHERE id = ?',
-      [cliente_id, endereco, status, id]
+      'UPDATE entrega SET data_retirada = ?, data_entrega = ?, endereco = ? WHERE id_entrega = ?',
+      [data_retirada, data_entrega, endereco , id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -745,7 +760,7 @@ async function removerEntrega(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM entrega WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM entrega WHERE id_entrega = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Entrega não encontrada' });
     }
@@ -761,18 +776,18 @@ async function removerEntrega(req, res) {
 
 // Cria um novo registro de histórico
 async function novoHistorico(req, res) {
-  const { acao, usuarioId } = req.body;
+  const { quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
 
   // Validação para garantir que todos os campos sejam enviados
-  if (!acao || !usuarioId) {
-    return res.status(400).json({ message: 'Os campos ação e usuarioId são obrigatórios' });
+  if (!quantidade || !preco_pago || !data_vencimento || !marca || !medida || !ingrediente_Id_ingrediente) {
+    return res.status(400).json({ message: 'Os campos são obrigatórios' });
   }
 
   try {
     // Inserção no banco de dados
     const [resultado] = await db.query(
-      'INSERT INTO historico_entrada (quantidade, preco_pago, data_vencimento, marca, medida,) VALUES (?, ?,?, ?, ?)',
-      [acao, usuarioId]
+      'INSERT INTO historico_entrada (quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente) VALUES (?, ?, ?, ?, ?, ?)',
+      [quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente]
     );
 
     return res.status(201).json({ message: 'Histórico criado com sucesso', historico: resultado });
@@ -802,7 +817,7 @@ async function listarUmHistorico(req, res) {
 
   try {
     // Consulta ao banco de dados
-    const [historico] = await db.query('SELECT * FROM historico WHERE id = ?', [id]);
+    const [historico] = await db.query('SELECT * FROM historico_entrada WHERE id_historico = ?', [id]);
 
     if (historico.length === 0) {
       return res.status(404).json({ message: 'Histórico não encontrado' });
@@ -818,18 +833,18 @@ async function listarUmHistorico(req, res) {
 // Atualiza um registro de histórico por ID
 async function atualizarHistorico(req, res) {
   const { id } = req.params;
-  const { acao, usuarioId } = req.body;
+  const { quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente } = req.body;
 
   // Validação para garantir que todos os campos sejam enviados
-  if (!acao || !usuarioId) {
-    return res.status(400).json({ message: 'Os campos ação e usuarioId são obrigatórios' });
+  if (!quantidade || !preco_pago || !data_vencimento || !marca || !medida || !ingrediente_Id_ingrediente) {
+    return res.status(400).json({ message: 'Os campos quantidade, preco_pago, data_vencimento, marca, medida e ingrediente_Id_ingrediente são obrigatórios' });
   }
 
   try {
     // Atualização no banco de dados
     const [resultado] = await db.query(
-      'UPDATE historico SET acao = ?, usuarioId = ? WHERE id = ?',
-      [acao, usuarioId, id]
+      'UPDATE historico_entrada SET quantidade = ?, preco_pago = ?, data_vencimento = ?, marca = ?, medida = ?, ingrediente_Id_ingrediente = ? WHERE id_historico = ?',
+      [quantidade, preco_pago, data_vencimento, marca, medida, ingrediente_Id_ingrediente, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -849,7 +864,7 @@ async function removerHistorico(req, res) {
 
   try {
     // Remoção no banco de dados
-    const [resultado] = await db.query('DELETE FROM historico WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM historico_entrada WHERE id_historico = ?', [id]);
 
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Histórico não encontrado' });
@@ -866,16 +881,17 @@ async function removerHistorico(req, res) {
 
 // Cria um novo pedido
 async function novoPedido(req, res) {
-  const { cliente_id, prato_id, quantidade } = req.body;
+  const {cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
 
-  if (!cliente_id || !prato_id || !quantidade) {
-    return res.status(400).json({ message: 'Os campos cliente_id, prato_id e quantidade são obrigatórios' });
+  if ( !cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega_id_entrega) {
+    return res.status(400).json({ message: 'Os campos entregador_id_entregador, usuarios_id_usuario, id_pedido, data_pedido, tempo_estimado e entrega_id_entrega são obrigatórios' });
+
   }
 
   try {
     const [resultado] = await db.query(
-      'INSERT INTO pedidos (cliente_id, prato_id, quantidade) VALUES (?, ?, ?)',
-      [cliente_id, prato_id, quantidade]
+      'INSERT INTO pedidos (cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega) VALUES (?, ?, ?, ?, ?, ?)',
+      [cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega]
     );
     return res.status(201).json({ message: 'Pedido criado com sucesso', pedido: resultado });
   } catch (error) {
@@ -887,7 +903,29 @@ async function novoPedido(req, res) {
 // Lista todos os pedidos
 async function listarPedidos(req, res) {
   try {
-    const [pedidos] = await db.query('SELECT * FROM pedidos');
+    const [pedidos] = await db.query(`
+      SELECT
+        t1.id_pedido AS pedido_id,
+        t2.nome AS cliente_nome,
+        t2.telefone AS cliente_telefone,
+        t2.endereco AS cliente_endereco,
+        t3.nome AS entregador_nome,
+        t3.telefone AS entregador_telefone,
+        t3.veiculo AS entregador_veiculo,
+        t5.nome AS prato_nome,
+        t5.descricao AS prato_descricao,
+        t5.preco AS prato_preco
+      FROM pedidos AS t1
+      JOIN cliente AS t2
+        ON t1.cliente_id_cliente = t2.id_cliente
+      JOIN entregador AS t3
+        ON t1.entregador_id_entregador = t3.id_entregador
+      JOIN pedidos_has_pratos AS t4
+        ON t1.id_pedido = t4.pedidos_id_pedido
+      JOIN pratos AS t5
+        ON t4.pratos_id_prato = t5.id_prato
+    `);
+
     return res.status(200).json(pedidos);
   } catch (error) {
     console.error(error);
@@ -900,7 +938,28 @@ async function listarUmPedido(req, res) {
   const { id } = req.params;
 
   try {
-    const [pedido] = await db.query('SELECT * FROM pedidos WHERE id = ?', [id]);
+    const [pedido] = await db.query(`
+	SELECT
+	t1.id_pedido,
+	t2.nome as nome_cliente,
+	t2.telefone as tel_cliente,
+	t2.endereco,
+	t3.nome as nome_entregador,
+	t3.telefone as tel_entregador,
+	t3.veiculo,
+	t5.nome as pedido,
+	t5.preco
+FROM pedidos as t1
+	JOIN cliente as t2
+		ON t1.cliente_id_cliente = t2.id_cliente
+	JOIN entregador as t3
+		ON t1.entregador_id_entregador = t3.id_entregador
+	JOIN pedidos_has_pratos as t4
+		ON t1.id_pedido = t4.pedidos_id_pedido
+	JOIN pratos as t5
+		ON t4.pedidos_id_pedido = t5.id_prato
+WHERE t1.id_pedido = ?
+     ` , [id]);
     if (pedido.length === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
@@ -914,16 +973,16 @@ async function listarUmPedido(req, res) {
 // Atualiza um pedido por ID
 async function atualizarPedido(req, res) {
   const { id } = req.params;
-  const { cliente_id, prato_id, quantidade } = req.body;
+  const {cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
 
-  if (!cliente_id || !prato_id || !quantidade) {
+  if ( !cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega_id_entrega) {
     return res.status(400).json({ message: 'Os campos cliente_id, prato_id e quantidade são obrigatórios' });
   }
 
   try {
     const [resultado] = await db.query(
-      'UPDATE pedidos SET cliente_id = ?, prato_id = ?, quantidade = ? WHERE id = ?',
-      [cliente_id, prato_id, quantidade, id]
+      'UPDATE pedidos SET cliente_id_cliente = ?, entregador_id_entregador = ?, usuarios_id_usuario = ?, data_pedido = ?, tempo_estimado = ?, entrega_id_entrega = ? WHERE id_pedido = ?',
+      [cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega, id]
     );
 
     if (resultado.affectedRows === 0) {
@@ -942,7 +1001,7 @@ async function removerPedido(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM pedidos WHERE id = ?', [id]);
+    const [resultado] = await db.query('DELETE FROM pedidos WHERE id_pedido = ?', [id]);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
@@ -951,64 +1010,6 @@ async function removerPedido(req, res) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao remover pedido' });
-  }
-}
-
-// Adiciona um prato a um pedido
-async function adicionarPratoAoPedido(req, res) {
-  const { id } = req.params; // ID do pedido
-  const { pratoId, quantidade } = req.body;
-
-  if (!pratoId || !quantidade) {
-    return res.status(400).json({ message: 'Os campos pratoId e quantidade são obrigatórios' });
-  }
-
-  try {
-    const [resultado] = await db.query(
-      'INSERT INTO pedidos_has_pratos (pedido_id, prato_id, quantidade) VALUES (?, ?, ?)',
-      [id, pratoId, quantidade]
-    );
-    return res.status(201).json({ message: 'Prato adicionado ao pedido com sucesso', resultado });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao adicionar prato ao pedido' });
-  }
-}
-
-// Lista os pratos de um pedido
-async function listarPratosDoPedido(req, res) {
-  const { id } = req.params; // ID do pedido
-
-  try {
-    const [pratos] = await db.query(
-      'SELECT p.id, p.nome, p.preco, pp.quantidade FROM pedidos_has_pratos pp JOIN pratos p ON pp.prato_id = p.id WHERE pp.pedido_id = ?',
-      [id]
-    );
-    return res.status(200).json(pratos);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao listar pratos do pedido' });
-  }
-}
-
-// Remove um prato de um pedido
-async function removerPratoDoPedido(req, res) {
-  const { id, pratoId } = req.params; // ID do pedido e do prato
-
-  try {
-    const [resultado] = await db.query(
-      'DELETE FROM pedidos_has_pratos WHERE pedido_id = ? AND prato_id = ?',
-      [id, pratoId]
-    );
-
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ message: 'Prato não encontrado no pedido' });
-    }
-
-    return res.status(200).json({ message: 'Prato removido do pedido com sucesso' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao remover prato do pedido' });
   }
 }
 
@@ -1080,8 +1081,5 @@ module.exports = {
   listarUmPedido,
   atualizarPedido,
   removerPedido,
-  adicionarPratoAoPedido,
-  listarPratosDoPedido,
-  removerPratoDoPedido,
 };
 

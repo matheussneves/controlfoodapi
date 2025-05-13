@@ -1,35 +1,47 @@
+require('dotenv').config(); // Carrega as variáveis do .env
+
 const express = require('express');
 const cors = require('cors');
-const router = require('./src/routes/routes');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./src/routes/swagger.js'); // Importando a configuração pronta
-require('dotenv').config();
+const swaggerJSDoc = require('swagger-jsdoc');
+const routes = require('./src/routes/routes');
 
 const app = express();
-const porta = process.env.PORT || 21229;
 
 // Middlewares
 app.use(cors());
-app.use(express.json({
-  verify: function (req, res, buf) {
-    req.rawBody = buf;
-  }
-}));
+app.use(express.json());
 
-// Swagger UI
+// Swagger config
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'ControlFood API',
+      version: '1.0.0',
+      description: 'API de gerenciamento de restaurante com Swagger',
+    },
+    servers: [
+      {
+        url: 'http://localhost:21229/api',
+      },
+    ],
+  },
+  apis: ['./src/routes/*.js', './src/controllers/*.js'], // Arquivos onde estão os comentários Swagger
+};
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+
+// Rota da documentação
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas da API
-app.use(router);
+app.use('/api', routes);
 
-// Rota raiz
-app.get('/', (req, res) => {
-  res.send("Autenticação feita com sucesso");
-});
-
-// Inicia o servidor
-app.listen(porta, () => {
-  console.log(`Aplicação rodando na porta ${porta}`);
-  console.log(`Documentação Swagger disponível em http://localhost:${porta}/api-docs`);
+// Inicializa servidor
+const PORT = process.env.PORT || 21229;
+app.listen(PORT, () => {
+  console.log(`✅ Servidor rodando em http://localhost:${PORT}`);
+  console.log(`📄 Swagger: http://localhost:${PORT}/api-docs`);
 });
 

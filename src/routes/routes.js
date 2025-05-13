@@ -444,11 +444,11 @@ router.delete('/estoque/:id', TaskController.removerEstoque);
  *                 items:
  *                   type: object
  *                   required:
- *                     - pratos_id_pratos
+ *                     - id_ingrediente
  *                     - quantidade
  *                     - medida
  *                   properties:
- *                     pratos_id_pratos:
+ *                     id_ingrediente:
  *                       type: integer
  *                     quantidade:
  *                       type: number
@@ -460,6 +460,111 @@ router.delete('/estoque/:id', TaskController.removerEstoque);
  *       400:
  *         description: Dados inválidos
  */
+
+/**
+ * @swagger
+ * /pratos:
+ *   get:
+ *     summary: Lista todos os pratos
+ *     tags: [Pratos]
+ *     responses:
+ *       200:
+ *         description: Lista de pratos com seus ingredientes
+ */
+
+/**
+ * @swagger
+ * /pratos/{id}:
+ *   get:
+ *     summary: Lista um prato por ID
+ *     tags: [Pratos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Prato encontrado com seus ingredientes
+ *       404:
+ *         description: Prato não encontrado
+ */
+
+/**
+ * @swagger
+ * /pratos/{id}:
+ *   put:
+ *     summary: Atualiza um prato por ID
+ *     tags: [Pratos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nome
+ *               - descricao
+ *               - preco
+ *               - tempo
+ *               - ingredientes
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               descricao:
+ *                 type: string
+ *               preco:
+ *                 type: number
+ *               tempo:
+ *                 type: number
+ *               ingredientes:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id_ingrediente
+ *                     - quantidade
+ *                     - medida
+ *                   properties:
+ *                     id_ingrediente:
+ *                       type: integer
+ *                     quantidade:
+ *                       type: number
+ *                     medida:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Prato atualizado com sucesso
+ *       404:
+ *         description: Prato não encontrado
+ */
+
+/**
+ * @swagger
+ * /pratos/{id}:
+ *   delete:
+ *     summary: Remove um prato por ID
+ *     tags: [Pratos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Prato removido com sucesso
+ *       404:
+ *         description: Prato não encontrado
+ */
+
 router.post('/pratos', TaskController.novoPrato);
 
 /**

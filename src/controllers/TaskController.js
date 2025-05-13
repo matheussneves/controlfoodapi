@@ -387,15 +387,23 @@ async function listarPratos(req, res) {
     const [pratos] = await db.query('SELECT * FROM pratos');
 
     // Adiciona os ingredientes para cada prato
-    const pratosComIngredientes = await Promise.all(
-      pratos.map(async (prato) => {
-        const [ingredientes] = await db.query(
-          'SELECT i.id_ingrediente, i.descricao, ip.quantidade, ip.medida FROM ingrediente_has_pratos ip JOIN ingrediente i ON ip.ingrediente_id_ingrediente = i.id_ingrediente WHERE ip.pratos_id_prato = ?',
-          [prato.id_prato]
-        );
-        return { ...prato, ingredientes };
-      })
-    );
+    const [ingredientes] = await db.query(`
+      SELECT 
+      i.id_ingrediente, 
+      i.descricao, 
+      ip.quantidade, 
+      ip.medida, 
+      ip.pratos_id_prato 
+      FROM ingrediente_has_pratos ip 
+      JOIN ingrediente i 
+      ON ip.ingrediente_id_ingrediente = i.id_ingrediente
+    `);
+
+    const pratosComIngredientes = pratos.map((prato) => {
+      const ingredientesDoPrato = ingredientes.filter(ingrediente => ingrediente.pratos_id_prato === prato.id_prato);
+      ingredientesSemId = ingredientesDoPrato.map(({ pratos_id_prato, ...rest }) => rest).map(({ id_ingrediente, ...rest }) => rest);
+      return { ...prato, ingredientes: ingredientesSemId };
+    });
 
     return res.status(200).json(pratosComIngredientes);
   } catch (error) {

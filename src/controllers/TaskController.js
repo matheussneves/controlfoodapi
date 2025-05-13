@@ -338,7 +338,7 @@ async function removerEstoque(req, res) {
 
 // Cria um novo prato
 async function novoPrato(req, res) {
-  const { nome, descricao, preco, tempo } = req.body;
+  const { nome, descricao, preco, tempo, ingredientes } = req.body;
 
   // Validação para garantir que todos os campos sejam enviados
   if (!nome || !descricao || !preco || !tempo) {
@@ -350,12 +350,31 @@ async function novoPrato(req, res) {
     return res.status(400).json({ message: 'O campo preco deve ser um número válido (float)' });
   }
 
+  // Validação para o array de ingredientes
+  if (!Array.isArray(ingredientes) || ingredientes.length === 0) {
+    return res.status(400).json({ message: 'O campo ingredientes deve ser um array com pelo menos um item' });
+  }
+
   try {
-    const [resultado] = await db.query(
+    // Inserção do prato no banco de dados
+    const [resultadoPrato] = await db.query(
       'INSERT INTO pratos (nome, descricao, preco, tempo) VALUES (?, ?, ?, ?)',
       [nome, descricao, preco, tempo]
     );
-    return res.status(201).json({ message: 'Prato criado com sucesso', prato: resultado });
+
+    const pratoId = resultadoPrato.insertId;
+
+    // Inserção dos ingredientes relacionados ao prato
+    const ingredientesPromises = ingredientes.map(({ pratos_id_pratos, quantidade, medida }) => {
+      return db.query(
+        'INSERT INTO ingrediente_has_pratos (pratos_id_prato, ingrediente_id_ingrediente, quantidade, medida) VALUES (?, ?, ?, ?)',
+        [pratoId, pratos_id_pratos, quantidade, medida]
+      );
+    });
+
+    await Promise.all(ingredientesPromises);
+
+    return res.status(201).json({ message: 'Prato criado com sucesso', pratoId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao criar prato' });
@@ -366,7 +385,19 @@ async function novoPrato(req, res) {
 async function listarPratos(req, res) {
   try {
     const [pratos] = await db.query('SELECT * FROM pratos');
-    return res.status(200).json(pratos);
+
+    // Adiciona os ingredientes para cada prato
+    const pratosComIngredientes = await Promise.all(
+      pratos.map(async (prato) => {
+        const [ingredientes] = await db.query(
+          'SELECT i.id_ingrediente, i.descricao, ip.quantidade, ip.medida FROM ingrediente_has_pratos ip JOIN ingrediente i ON ip.ingrediente_id_ingrediente = i.id_ingrediente WHERE ip.pratos_id_prato = ?',
+          [prato.id_prato]
+        );
+        return { ...prato, ingredientes };
+      })
+    );
+
+    return res.status(200).json(pratosComIngredientes);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao listar pratos' });
@@ -379,10 +410,17 @@ async function listarUmPrato(req, res) {
 
   try {
     const [prato] = await db.query('SELECT * FROM pratos WHERE id_prato = ?', [id]);
+
     if (prato.length === 0) {
       return res.status(404).json({ message: 'Prato não encontrado' });
     }
-    return res.status(200).json(prato[0]);
+
+    const [ingredientes] = await db.query(
+      'SELECT i.id_ingrediente, i.descricao, ip.quantidade, ip.medida FROM ingrediente_has_pratos ip JOIN ingrediente i ON ip.ingrediente_id_ingrediente = i.id_ingrediente WHERE ip.pratos_id_prato = ?',
+      [id]
+    );
+
+    return res.status(200).json({ ...prato[0], ingredientes });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao buscar prato' });
@@ -392,19 +430,15 @@ async function listarUmPrato(req, res) {
 // Atualiza um prato por ID
 async function atualizarPrato(req, res) {
   const { id } = req.params;
-  const { nome, descricao, preco, tempo } = req.body;
+  const { nome, descricao, preco, tempo, ingredientes } = req.body;
 
   // Validação para garantir que todos os campos sejam enviados
-  if (!nome || !descricao || !preco || !tempo) {
-    return res.status(400).json({ message: 'Os campos nome, descricao, preco e tempo são obrigatórios' });
-  }
-
-  // Validação para garantir que o preço seja um número float
-  if (typeof preco !== 'number' || !Number.isFinite(preco)) {
-    return res.status(400).json({ message: 'O campo preco deve ser um número válido (float)' });
+  if (!nome || !descricao || !preco || !tempo || !Array.isArray(ingredientes)) {
+    return res.status(400).json({ message: 'Os campos nome, descricao, preco, tempo e ingredientes são obrigatórios' });
   }
 
   try {
+    // Atualiza o prato
     const [resultado] = await db.query(
       'UPDATE pratos SET nome = ?, descricao = ?, preco = ?, tempo = ? WHERE id_prato = ?',
       [nome, descricao, preco, tempo, id]
@@ -413,6 +447,19 @@ async function atualizarPrato(req, res) {
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Prato não encontrado' });
     }
+
+    // Remove os ingredientes antigos
+    await db.query('DELETE FROM ingrediente_has_pratos WHERE pratos_id_prato = ?', [id]);
+
+    // Adiciona os novos ingredientes
+    const ingredientesPromises = ingredientes.map(({ id_ingrediente, quantidade, medida }) => {
+      return db.query(
+        'INSERT INTO ingrediente_has_pratos (pratos_id_prato, ingrediente_id_ingrediente, quantidade, medida) VALUES (?, ?, ?, ?)',
+        [id, id_ingrediente, quantidade, medida]
+      );
+    });
+
+    await Promise.all(ingredientesPromises);
 
     return res.status(200).json({ message: 'Prato atualizado com sucesso' });
   } catch (error) {
@@ -426,7 +473,12 @@ async function removerPrato(req, res) {
   const { id } = req.params;
 
   try {
+    // Remove os ingredientes relacionados ao prato
+    await db.query('DELETE FROM ingrediente_has_pratos WHERE pratos_id_prato = ?', [id]);
+
+    // Remove o prato
     const [resultado] = await db.query('DELETE FROM pratos WHERE id_prato = ?', [id]);
+
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Prato não encontrado' });
     }

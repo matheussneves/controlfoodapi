@@ -284,32 +284,6 @@ router.put('/ingredientes/:id', TaskController.atualizarIngrediente);
  */
 router.delete('/ingredientes/:id', TaskController.removerIngrediente);
 
-/**
- * @swagger
- * /ingredientes/quantidade/{id}:
- *   put:
- *     summary: Atualiza a quantidade de um ingrediente
- *     tags: [Ingredientes]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               quantidade:
- *                 type: number
- *     responses:
- *       200:
- *         description: Quantidade atualizada com sucesso
- */
-
 // ========== Estoque ==========
 /**
  * @swagger
@@ -455,6 +429,7 @@ router.delete('/estoque/:id', TaskController.removerEstoque);
  *               - descricao
  *               - preco
  *               - tempo
+ *               - ingredientes
  *             properties:
  *               nome:
  *                 type: string
@@ -464,6 +439,21 @@ router.delete('/estoque/:id', TaskController.removerEstoque);
  *                 type: number
  *               tempo:
  *                 type: number
+ *               ingredientes:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - pratos_id_pratos
+ *                     - quantidade
+ *                     - medida
+ *                   properties:
+ *                     pratos_id_pratos:
+ *                       type: integer
+ *                     quantidade:
+ *                       type: number
+ *                     medida:
+ *                       type: string
  *     responses:
  *       201:
  *         description: Prato criado com sucesso

@@ -1,6 +1,6 @@
 const db = require('../db/database');
-const jwt = require('jsonwebtoken'); 
-const bcrypt = require('bcrypt'); 
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // ========== Usuários ==========
 // Cria um novo usuário
@@ -661,7 +661,7 @@ async function novoEntregador(req, res) {
   try {
     const [resultado] = await db.query(
       'INSERT INTO entregador (nome, telefone, veiculo, placa, senha ) VALUES (?, ?, ?, ?, ?)',
-      [nome, telefone, veiculo, placa, senha ]
+      [nome, telefone, veiculo, placa, senha]
     );
     return res.status(201).json({ message: 'Entregador criado com sucesso', entregador: resultado });
   } catch (error) {
@@ -700,7 +700,7 @@ async function listarUmEntregador(req, res) {
 // Atualiza um entregador por ID
 async function atualizarEntregador(req, res) {
   const { id } = req.params;
-  const { nome, telefone, veiculo, placa, senha  } = req.body;
+  const { nome, telefone, veiculo, placa, senha } = req.body;
 
   if (!nome || !telefone || !veiculo || !placa || !senha || !id) {
     return res.status(400).json({ message: 'Os campos nome e telefone são obrigatórios' });
@@ -742,95 +742,10 @@ async function removerEntregador(req, res) {
 
 // ========== Entregas ==========
 
-// Cria uma nova entrega
-async function novaEntrega(req, res) {
-  const { data_retirada, data_entrega, endereco } = req.body;
-
-  if (!data_retirada || !data_entrega || !endereco) {
-    return res.status(400).json({ message: 'Os campos cliente_id, endereco e status são obrigatórios' });
-  }
-
-  try {
-    const [resultado] = await db.query(
-      'INSERT INTO entrega (data_retirada, data_entrega, endereco ) VALUES (?, ?, ?)',
-      [ data_retirada, data_entrega, endereco ]
-    );
-    return res.status(201).json({ message: 'Entrega criada com sucesso', entrega: resultado });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao criar entrega' });
-  }
-}
-
-// Lista todas as entregas
-async function listarEntregas(req, res) {
-  try {
-    const [entregas] = await db.query('SELECT * FROM entrega');
-    return res.status(200).json(entregas);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao listar entregas' });
-  }
-}
-
-// Lista uma entrega por ID
-async function listarUmaEntrega(req, res) {
-  const { id } = req.params;
-
-  try {
-    const [entrega] = await db.query('SELECT * FROM entrega WHERE id_entrega = ?', [id]);
-    if (entrega.length === 0) {
-      return res.status(404).json({ message: 'Entrega não encontrada' });
-    }
-    return res.status(200).json(entrega[0]);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao buscar entrega' });
-  }
-}
-
 // Atualiza uma entrega por ID
-async function atualizarEntrega(req, res) {
-  const { id } = req.params;
-  const { data_retirada, data_entrega, endereco } = req.body;
-
-  if (!data_retirada || !data_entrega || !endereco || !id) {
-    return res.status(400).json({ message: 'Os campos cliente_id, endereco e status são obrigatórios' });
-  }
-
-  try {
-    const [resultado] = await db.query(
-      'UPDATE entrega SET data_retirada = ?, data_entrega = ?, endereco = ? WHERE id_entrega = ?',
-      [data_retirada, data_entrega, endereco , id]
-    );
-
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ message: 'Entrega não encontrada' });
-    }
-
-    return res.status(200).json({ message: 'Entrega atualizada com sucesso' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao atualizar entrega' });
-  }
-}
 
 // Remove uma entrega por ID
-async function removerEntrega(req, res) {
-  const { id } = req.params;
 
-  try {
-    const [resultado] = await db.query('DELETE FROM entrega WHERE id_entrega = ?', [id]);
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ message: 'Entrega não encontrada' });
-    }
-
-    return res.status(200).json({ message: 'Entrega removida com sucesso' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro ao remover entrega' });
-  }
-}
 
 // ========== Histórico ==========
 
@@ -861,7 +776,16 @@ async function novoHistorico(req, res) {
 async function listarHistoricos(req, res) {
   try {
     // Consulta ao banco de dados
-    const [historicos] = await db.query('SELECT * FROM historico_entrada');
+    const [historicos] = await db.query(`
+      SELECT 
+      h.*, 
+      i.descricao AS ingrediente_descricao, 
+      i.contem_alergicos, 
+      i.informacoes_nutricionais 
+      FROM historico_entrada h
+      JOIN ingrediente i 
+      ON h.ingrediente_Id_ingrediente = i.id_ingrediente
+    `);
 
     // Retorna a lista de históricos
     return res.status(200).json(historicos);
@@ -877,7 +801,13 @@ async function listarUmHistorico(req, res) {
 
   try {
     // Consulta ao banco de dados
-    const [historico] = await db.query('SELECT * FROM historico_entrada WHERE id_historico = ?', [id]);
+    const [historico] = await db.query(`SELECT h.*, 
+      i.descricao AS ingrediente_descricao, 
+      i.contem_alergicos, 
+      i.informacoes_nutricionais 
+      FROM historico_entrada h
+      JOIN ingrediente i 
+      ON h.ingrediente_Id_ingrediente = i.id_ingrediente WHERE id_historico = ?`, [id]);
 
     if (historico.length === 0) {
       return res.status(404).json({ message: 'Histórico não encontrado' });
@@ -941,19 +871,54 @@ async function removerHistorico(req, res) {
 
 // Cria um novo pedido
 async function novoPedido(req, res) {
-  const {cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
+  const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega } = req.body;
 
-  if ( !cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega_id_entrega) {
-    return res.status(400).json({ message: 'Os campos entregador_id_entregador, usuarios_id_usuario, id_pedido, data_pedido, tempo_estimado e entrega_id_entrega são obrigatórios' });
-
+  if (!cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega) {
+    return res.status(400).json({ message: 'Os campos cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado e entrega são obrigatórios' });
   }
 
   try {
-    const [resultado] = await db.query(
+    // Cria a entrega
+    const { data_retirada, data_entrega, endereco } = entrega;
+
+    if (!data_retirada || !data_entrega || !endereco) {
+      return res.status(400).json({ message: 'Os campos data_retirada, data_entrega e endereco são obrigatórios para a entrega' });
+    }
+
+    const [resultadoEntrega] = await db.query(
+      'INSERT INTO entrega (data_retirada, data_entrega, endereco) VALUES (?, ?, ?)',
+      [data_retirada, data_entrega, endereco]
+    );
+
+    const entrega_id_entrega = resultadoEntrega.insertId;
+
+    // Cria o pedido
+    const [resultadoPedido] = await db.query(
       'INSERT INTO pedidos (cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega) VALUES (?, ?, ?, ?, ?, ?)',
       [cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega]
     );
-    return res.status(201).json({ message: 'Pedido criado com sucesso', pedido: resultado });
+
+    const pedido_id_pedido = resultadoPedido.insertId;
+
+    // Popula a tabela pedidos_has_pratos
+    const { pratos } = req.body; // Array de objetos com id_prato e quantidade
+    if (!Array.isArray(pratos) || pratos.length === 0) {
+      return res.status(400).json({ message: 'O campo pratos deve ser um array com pelo menos um item' });
+    }
+
+    const pratosPromises = pratos.map(({ id_prato }) => {
+      if (!id_prato) {
+        throw new Error('Os campos id_prato e quantidade são obrigatórios para cada prato');
+      }
+      return db.query(
+        'INSERT INTO pedidos_has_pratos (pedidos_id_pedido, pratos_id_prato) VALUES (?, ?)',
+        [pedido_id_pedido, id_prato]
+      );
+    });
+
+    await Promise.all(pratosPromises);
+
+    return res.status(201).json({ message: 'Pedido criado com sucesso', pedido: resultadoPedido });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao criar pedido' });
@@ -964,66 +929,91 @@ async function novoPedido(req, res) {
 async function listarPedidos(req, res) {
   try {
     const [pedidos] = await db.query(`
-      SELECT
-        t1.id_pedido AS pedido_id,
-        t2.nome AS cliente_nome,
-        t2.telefone AS cliente_telefone,
-        t2.endereco AS cliente_endereco,
-        t3.nome AS entregador_nome,
-        t3.telefone AS entregador_telefone,
-        t3.veiculo AS entregador_veiculo,
-        t5.nome AS prato_nome,
-        t5.descricao AS prato_descricao,
-        t5.preco AS prato_preco
-      FROM pedidos AS t1
-      JOIN cliente AS t2
-        ON t1.cliente_id_cliente = t2.id_cliente
-      JOIN entregador AS t3
-        ON t1.entregador_id_entregador = t3.id_entregador
-      JOIN pedidos_has_pratos AS t4
-        ON t1.id_pedido = t4.pedidos_id_pedido
-      JOIN pratos AS t5
-        ON t4.pratos_id_prato = t5.id_prato
-    `);
+        SELECT
+        t1.id_pedido,
+        t2.nome as nome_cliente,
+        t2.telefone as tel_cliente,
+        t2.endereco,
+        t3.nome as nome_entregador,
+        t3.telefone as tel_entregador,
+        t3.veiculo,
+        t5.preco,
+        t6.data_retirada,
+        t6.data_entrega
+      FROM pedidos as t1
+        JOIN cliente as t2
+          ON t1.cliente_id_cliente = t2.id_cliente
+        JOIN entregador as t3
+          ON t1.entregador_id_entregador = t3.id_entregador
+        JOIN pedidos_has_pratos as t4
+          ON t1.id_pedido = t4.pedidos_id_pedido
+        JOIN pratos as t5
+          ON t4.pratos_id_prato = t5.id_prato
+        JOIN entrega as t6
+          ON t1.entrega_id_entrega = t6.id_entrega
+      `);
 
-    return res.status(200).json(pedidos);
+    const [pratos] = await db.query(`SELECT t1.nome, t1.descricao, t1.preco, t1.tempo , t2.pedidos_id_pedido FROM pratos as t1
+          JOIN pedidos_has_pratos as t2
+          ON t1.id_prato = t2.pratos_id_prato 
+          JOIN pedidos as t3
+          ON t2.pedidos_id_pedido = t3.id_pedido`);
+
+    const pedidosComEntregas = pedidos.map((pedido) => {
+      const prato = pratos.find((prato) => prato.pedidos_id_pedido === pedido.id_pedido);
+      return { ...pedido, prato };
+    });
+
+    return res.status(200).json(pedidosComEntregas);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao listar pedidos' });
   }
 }
 
+
 // Lista um pedido por ID
 async function listarUmPedido(req, res) {
   const { id } = req.params;
-
   try {
     const [pedido] = await db.query(`
-	SELECT
-	t1.id_pedido,
-	t2.nome as nome_cliente,
-	t2.telefone as tel_cliente,
-	t2.endereco,
-	t3.nome as nome_entregador,
-	t3.telefone as tel_entregador,
-	t3.veiculo,
-	t5.nome as pedido,
-	t5.preco
-FROM pedidos as t1
-	JOIN cliente as t2
-		ON t1.cliente_id_cliente = t2.id_cliente
-	JOIN entregador as t3
-		ON t1.entregador_id_entregador = t3.id_entregador
-	JOIN pedidos_has_pratos as t4
-		ON t1.id_pedido = t4.pedidos_id_pedido
-	JOIN pratos as t5
-		ON t4.pedidos_id_pedido = t5.id_prato
-WHERE t1.id_pedido = ?
-     ` , [id]);
+      SELECT
+        t1.id_pedido,
+        t2.nome as nome_cliente,
+        t2.telefone as tel_cliente,
+        t2.endereco,
+        t3.nome as nome_entregador,
+        t3.telefone as tel_entregador,
+        t3.veiculo,
+        t5.preco,
+        t6.data_retirada,
+        t6.data_entrega
+      FROM pedidos as t1
+        JOIN cliente as t2
+          ON t1.cliente_id_cliente = t2.id_cliente
+        JOIN entregador as t3
+          ON t1.entregador_id_entregador = t3.id_entregador
+        JOIN pedidos_has_pratos as t4
+          ON t1.id_pedido = t4.pedidos_id_pedido
+        JOIN pratos as t5
+          ON t4.pratos_id_prato = t5.id_prato
+        JOIN entrega as t6
+          ON t1.entrega_id_entrega = t6.id_entrega
+      WHERE t1.id_pedido = ?
+    `, [id]);
+    const [pratos] = await db.query(`SELECT t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
+  JOIN pedidos_has_pratos as t2
+          ON t1.id_prato = t2.pratos_id_prato 
+          JOIN pedidos as t3
+          ON t2.pedidos_id_pedido = t3.id_pedido WHERE t3.id_pedido = ?`, [id]);
     if (pedido.length === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
-    return res.status(200).json(pedido[0]);
+
+    return res.status(200).json({ pedido: pedido[0], Pratos: pratos[0] });
+
+
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao buscar pedido' });
@@ -1033,26 +1023,61 @@ WHERE t1.id_pedido = ?
 // Atualiza um pedido por ID
 async function atualizarPedido(req, res) {
   const { id } = req.params;
-  const {cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega } = req.body;
+  const { cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega, pratos } = req.body;
 
-  if ( !cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega_id_entrega) {
-    return res.status(400).json({ message: 'Os campos cliente_id, prato_id e quantidade são obrigatórios' });
+  // Validação para garantir que todos os campos sejam enviados
+  if (!cliente_id_cliente || !entregador_id_entregador || !usuarios_id_usuario || !data_pedido || !tempo_estimado || !entrega || !Array.isArray(pratos)) {
+    return res.status(400).json({ message: 'Os campos cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega e pratos são obrigatórios' });
   }
 
   try {
-    const [resultado] = await db.query(
-      'UPDATE pedidos SET cliente_id_cliente = ?, entregador_id_entregador = ?, usuarios_id_usuario = ?, data_pedido = ?, tempo_estimado = ?, entrega_id_entrega = ? WHERE id_pedido = ?',
-      [cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, entrega_id_entrega, id]
+    // Atualiza o pedido
+    const [resultadoPedido] = await db.query(
+      'UPDATE pedidos SET cliente_id_cliente = ?, entregador_id_entregador = ?, usuarios_id_usuario = ?, data_pedido = ?, tempo_estimado = ? WHERE id_pedido = ?',
+      [cliente_id_cliente, entregador_id_entregador, usuarios_id_usuario, data_pedido, tempo_estimado, id]
     );
 
-    if (resultado.affectedRows === 0) {
+    if (resultadoPedido.affectedRows === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
 
-    return res.status(200).json({ message: 'Pedido atualizado com sucesso' });
+    // Atualiza a entrega
+    const { data_retirada, data_entrega, endereco } = entrega;
+
+    if (!data_retirada || !data_entrega || !endereco) {
+      return res.status(400).json({ message: 'Os campos data_retirada, data_entrega e endereco são obrigatórios para a entrega' });
+    }
+    const [id_entrega] = await db.query(`SELECT entrega_id_entrega FROM pedidos WHERE id_pedido = ?`, [id]);
+
+    const [resultadoEntrega] = await db.query(
+      'UPDATE entrega SET data_retirada = ?, data_entrega = ?, endereco = ? WHERE id_entrega = ?',
+      [data_retirada, data_entrega, endereco, id_entrega[0].entrega_id_entrega]
+    );
+
+    if (resultadoEntrega.affectedRows === 0) {
+      return res.status(404).json({ message: 'Entrega não encontrada' });
+    }
+
+    // Remove os pratos antigos associados ao pedido
+    await db.query('DELETE FROM pedidos_has_pratos WHERE pedidos_id_pedido = ?', [id]);
+
+    // Adiciona os novos pratos ao pedido
+    const pratosPromises = pratos.map(({ id_prato }) => {
+      if (!id_prato) {
+        throw new Error('Os campos id_prato e quantidade são obrigatórios para cada prato');
+      }
+      return db.query(
+        'INSERT INTO pedidos_has_pratos (pedidos_id_pedido, pratos_id_prato) VALUES (?, ?)',
+        [id, id_prato]
+      );
+    });
+
+    await Promise.all(pratosPromises);
+
+    return res.status(200).json({ message: 'Pedido, entrega e pratos atualizados com sucesso' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Erro ao atualizar pedido' });
+    return res.status(500).json({ message: 'Erro ao atualizar pedido, entrega e pratos' });
   }
 }
 
@@ -1061,15 +1086,25 @@ async function removerPedido(req, res) {
   const { id } = req.params;
 
   try {
-    const [resultado] = await db.query('DELETE FROM pedidos WHERE id_pedido = ?', [id]);
-    if (resultado.affectedRows === 0) {
+    // Remove os pratos associados ao pedido
+    await db.query('DELETE FROM pedidos_has_pratos WHERE pedidos_id_pedido = ?', [id]);
+
+    // Remove o pedido
+    const [pedidoResultado] = await db.query('DELETE FROM pedidos WHERE id_pedido = ?', [id]);
+    if (pedidoResultado.affectedRows === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
 
-    return res.status(200).json({ message: 'Pedido removido com sucesso' });
+    // Remove a entrega associada ao pedido
+    const [entregaResultado] = await db.query('DELETE FROM entrega WHERE id_entrega = ?', [id]);
+    if (entregaResultado.affectedRows === 0) {
+      return res.status(404).json({ message: 'Entrega não encontrada' });
+    }
+
+    return res.status(200).json({ message: 'Pedido, entrega e pratos removidos com sucesso' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Erro ao remover pedido' });
+    return res.status(500).json({ message: 'Erro ao remover pedido, entrega e pratos' });
   }
 }
 
@@ -1120,13 +1155,6 @@ module.exports = {
   listarUmEntregador,
   atualizarEntregador,
   removerEntregador,
-
-  // Entregas
-  novaEntrega,
-  listarEntregas,
-  listarUmaEntrega,
-  atualizarEntrega,
-  removerEntrega,
 
   // Histórico
   novoHistorico,

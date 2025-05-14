@@ -1055,6 +1055,7 @@ router.put('/historico/:id', TaskController.atualizarHistorico);
 router.delete('/historico/:id', TaskController.removerHistorico);
 
 // ========== Pedidos ==========
+
 /**
  * @swagger
  * /pedidos:
@@ -1073,7 +1074,8 @@ router.delete('/historico/:id', TaskController.removerHistorico);
  *               - usuarios_id_usuario
  *               - data_pedido
  *               - tempo_estimado
- *               - entrega_id_entrega
+ *               - entrega
+ *               - pratos
  *             properties:
  *               cliente_id_cliente:
  *                 type: integer
@@ -1086,8 +1088,30 @@ router.delete('/historico/:id', TaskController.removerHistorico);
  *                 format: date
  *               tempo_estimado:
  *                 type: integer
- *               entrega_id_entrega:
- *                 type: integer
+ *               entrega:
+ *                 type: object
+ *                 required:
+ *                   - data_retirada
+ *                   - data_entrega
+ *                   - endereco
+ *                 properties:
+ *                   data_retirada:
+ *                     type: string
+ *                     format: date
+ *                   data_entrega:
+ *                     type: string
+ *                     format: date
+ *                   endereco:
+ *                     type: string
+ *               pratos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id_prato
+ *                   properties:
+ *                     id_prato:
+ *                       type: integer
  *     responses:
  *       201:
  *         description: Pedido criado com sucesso
@@ -1104,7 +1128,7 @@ router.post('/pedidos', TaskController.novoPedido);
  *     tags: [Pedidos]
  *     responses:
  *       200:
- *         description: Lista de pedidos
+ *         description: Lista de pedidos com informações detalhadas
  */
 router.get('/pedidos', TaskController.listarPedidos);
 
@@ -1122,7 +1146,7 @@ router.get('/pedidos', TaskController.listarPedidos);
  *           type: integer
  *     responses:
  *       200:
- *         description: Pedido encontrado
+ *         description: Pedido encontrado com informações detalhadas
  *       404:
  *         description: Pedido não encontrado
  */
@@ -1152,7 +1176,8 @@ router.get('/pedidos/:id', TaskController.listarUmPedido);
  *               - usuarios_id_usuario
  *               - data_pedido
  *               - tempo_estimado
- *               - entrega_id_entrega
+ *               - entrega
+ *               - pratos
  *             properties:
  *               cliente_id_cliente:
  *                 type: integer
@@ -1165,8 +1190,30 @@ router.get('/pedidos/:id', TaskController.listarUmPedido);
  *                 format: date
  *               tempo_estimado:
  *                 type: integer
- *               entrega_id_entrega:
- *                 type: integer
+ *               entrega:
+ *                 type: object
+ *                 required:
+ *                   - data_retirada
+ *                   - data_entrega
+ *                   - endereco
+ *                 properties:
+ *                   data_retirada:
+ *                     type: string
+ *                     format: date
+ *                   data_entrega:
+ *                     type: string
+ *                     format: date
+ *                   endereco:
+ *                     type: string
+ *               pratos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id_prato
+ *                   properties:
+ *                     id_prato:
+ *                       type: integer
  *     responses:
  *       200:
  *         description: Pedido atualizado com sucesso
@@ -1189,136 +1236,11 @@ router.put('/pedidos/:id', TaskController.atualizarPedido);
  *           type: integer
  *     responses:
  *       200:
- *         description: Pedido removido com sucesso
+ *         description: Pedido, entrega e pratos removidos com sucesso
  *       404:
- *         description: Pedido não encontrado
+ *         description: Pedido ou entrega não encontrados
  */
 router.delete('/pedidos/:id', TaskController.removerPedido);
-
-// ========== Entregas ==========
-/**
- * @swagger
- * /entregas:
- *   post:
- *     summary: Cria uma nova entrega
- *     tags: [Entregas]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - data_retirada
- *               - data_entrega
- *               - endereco
- *             properties:
- *               data_retirada:
- *                 type: string
- *                 format: date
- *               data_entrega:
- *                 type: string
- *                 format: date
- *               endereco:
- *                 type: string
- *     responses:
- *       201:
- *         description: Entrega criada com sucesso
- *       400:
- *         description: Dados inválidos
- */
-router.post('/entregas', TaskController.novaEntrega);
-
-/**
- * @swagger
- * /entregas:
- *   get:
- *     summary: Lista todas as entregas
- *     tags: [Entregas]
- *     responses:
- *       200:
- *         description: Lista de entregas
- */
-router.get('/entregas', TaskController.listarEntregas);
-
-/**
- * @swagger
- * /entregas/{id}:
- *   get:
- *     summary: Lista uma entrega por ID
- *     tags: [Entregas]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Entrega encontrada
- *       404:
- *         description: Entrega não encontrada
- */
-router.get('/entregas/:id', TaskController.listarUmaEntrega);
-
-/**
- * @swagger
- * /entregas/{id}:
- *   put:
- *     summary: Atualiza uma entrega por ID
- *     tags: [Entregas]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - data_retirada
- *               - data_entrega
- *               - endereco
- *             properties:
- *               data_retirada:
- *                 type: string
- *                 format: date
- *               data_entrega:
- *                 type: string
- *                 format: date
- *               endereco:
- *                 type: string
- *     responses:
- *       200:
- *         description: Entrega atualizada com sucesso
- *       404:
- *         description: Entrega não encontrada
- */
-router.put('/entregas/:id', TaskController.atualizarEntrega);
-
-/**
- * @swagger
- * /entregas/{id}:
- *   delete:
- *     summary: Remove uma entrega por ID
- *     tags: [Entregas]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Entrega removida com sucesso
- *       404:
- *         description: Entrega não encontrada
- */
-router.delete('/entregas/:id', TaskController.removerEntrega);
 
 module.exports = router;
 

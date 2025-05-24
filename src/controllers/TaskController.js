@@ -393,22 +393,27 @@ async function listarPratos(req, res) {
       i.descricao, 
       ip.quantidade, 
       ip.medida, 
-      ip.pratos_id_prato 
+      ip.pratos_id_prato, 
+      e.quantidade AS estoque
       FROM ingrediente_has_pratos ip 
       JOIN ingrediente i 
       ON ip.ingrediente_id_ingrediente = i.id_ingrediente
+      JOIN estoque e
+      ON e.ingrediente_Id_ingrediente = i.id_ingrediente
     `);
 
     const pratosComIngredientes = pratos.map((prato) => {
       const ingredientesDoPrato = ingredientes.filter(ingrediente => ingrediente.pratos_id_prato === prato.id_prato);
       ingredientesSemId = ingredientesDoPrato.map(({ pratos_id_prato, ...rest }) => rest).map(({ id_ingrediente, ...rest }) => rest);
-      return { ...prato, ingredientes: ingredientesSemId };
+    if (ingredientesDoPrato === null){  return { ...prato, ingredientes: ingredientesSemId }; }
+    
     });
-
-    return res.status(200).json(pratosComIngredientes);
+    if (pratosComIngredientes === null){  return res.status(200).json(pratosComIngredientes); }
+    return res.status(400).json({ message: 'Não há pratos disponiveis' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao listar pratos' });
+
   }
 }
 

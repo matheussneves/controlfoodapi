@@ -1031,15 +1031,15 @@ async function listarPedidos(req, res) {
           ON t1.entrega_id_entrega = t6.id_entrega
       `);
 
-    const [pratos] = await db.query(`SELECT t1.nome, t1.descricao, t1.preco, t1.tempo FROM pratos as t1
-          JOIN pedidos_has_pratos as t2
+    const [pratos] = await db.query(`SELECT t1.id_prato, t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
+  JOIN pedidos_has_pratos as t2
           ON t1.id_prato = t2.pratos_id_prato 
           JOIN pedidos as t3
           ON t2.pedidos_id_pedido = t3.id_pedido`);
 
     const pedidosComEntregas = pedidos.map((pedido) => {
       const prato = pratos.find((prato) => prato.pedidos_id_pedido === pedido.id_pedido);
-      return { ...pedido, prato };
+      return { ...pedido, Pratos: pratos };
     });
 
     return res.status(200).json(pedidosComEntregas);

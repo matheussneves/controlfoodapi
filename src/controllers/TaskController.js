@@ -162,9 +162,14 @@ async function novoIngrediente(req, res) {
 // Lista todos os ingredientes
 async function listarIngredientes(req, res) {
   try {
-    // Consulta ao banco de dados
-    const [ingredientes] = await db.query('SELECT * FROM ingrediente');
-
+  
+    // Faz join com estoque e filtra ingredientes com estoque suficiente
+    const [ingredientes] = await db.query(`
+      SELECT i.*, e.quantidade, e.quantidade_minima
+      FROM ingrediente i
+      LEFT JOIN estoque e ON e.ingrediente_Id_ingrediente = i.id_ingrediente
+      WHERE e.quantidade IS NOT NULL AND e.quantidade > e.quantidade_minima
+    `);
     // Retorna a lista de ingredientes
     return res.status(200).json(ingredientes);
   } catch (error) {

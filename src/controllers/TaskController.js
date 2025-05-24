@@ -1003,43 +1003,48 @@ async function novoPedido(req, res) {
 async function listarPedidos(req, res) {
   try {
     const [pedidos] = await db.query(`
-        SELECT
-        t1.id_pedido,
-        t1.cliente_id_cliente,
-        t2.nome as nome_cliente,
-        t1.entregador_id_entregador,
-        t1.data_pedido,
-        t4.pratos_id_prato,
-        t2.telefone as tel_cliente,
-        t2.endereco,
-        t3.nome as nome_entregador,
-        t3.telefone as tel_entregador,
-        t3.veiculo,
-        t5.preco,
-        t6.data_retirada,
-        t6.data_entrega
+      SELECT
+      t1.id_pedido,
+      t1.cliente_id_cliente,
+      t2.nome as nome_cliente,
+      t1.entregador_id_entregador,
+      t1.data_pedido,
+      t2.telefone as tel_cliente,
+      t2.endereco,
+      t3.nome as nome_entregador,
+      t3.telefone as tel_entregador,
+      t3.veiculo,
+      t6.data_retirada,
+      t6.data_entrega,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+        'id_prato', t5.id_prato,
+        'nome', t5.nome,
+        'descricao', t5.descricao,
+        'preco', t5.preco,
+        'tempo', t5.tempo,
+        'pedidos_id_pedido', t4.pedidos_id_pedido
+        )
+      ) as pratos
       FROM pedidos as t1
-        JOIN cliente as t2
-          ON t1.cliente_id_cliente = t2.id_cliente
-        JOIN entregador as t3
-          ON t1.entregador_id_entregador = t3.id_entregador
-        JOIN pedidos_has_pratos as t4
-          ON t1.id_pedido = t4.pedidos_id_pedido
-        JOIN pratos as t5
-          ON t4.pratos_id_prato = t5.id_prato
-        JOIN entrega as t6
-          ON t1.entrega_id_entrega = t6.id_entrega
-      `);
+      JOIN cliente as t2
+        ON t1.cliente_id_cliente = t2.id_cliente
+      JOIN entregador as t3
+        ON t1.entregador_id_entregador = t3.id_entregador
+      JOIN pedidos_has_pratos as t4
+        ON t1.id_pedido = t4.pedidos_id_pedido
+      JOIN pratos as t5
+        ON t4.pratos_id_prato = t5.id_prato
+      JOIN entrega as t6
+        ON t1.entrega_id_entrega = t6.id_entrega
+      GROUP BY t1.id_pedido
+    `);
 
-    const [pratos] = await db.query(`SELECT t1.id_prato, t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
-  JOIN pedidos_has_pratos as t2
-          ON t1.id_prato = t2.pratos_id_prato 
-          JOIN pedidos as t3
-          ON t2.pedidos_id_pedido = t3.id_pedido`);
+    
 
     const pedidosComEntregas = pedidos.map((pedido) => {
-      const prato = pratos.find((prato) => prato.pedidos_id_pedido === pedido.id_pedido);
-      return { ...pedido, Pratos: pratos };
+      
+      return { ...pedido };
     });
 
     return res.status(200).json(pedidosComEntregas);
@@ -1056,43 +1061,49 @@ async function listarUmPedido(req, res) {
   try {
     const [pedido] = await db.query(`
       SELECT
-        t1.id_pedido,
-        t1.cliente_id_cliente,
-        t2.nome as nome_cliente,
-        t1.entregador_id_entregador,
-        t1.data_pedido,
-        t4.pratos_id_prato,
-        t2.telefone as tel_cliente,
-        t2.endereco,
-        t3.nome as nome_entregador,
-        t3.telefone as tel_entregador,
-        t3.veiculo,
-        t5.preco,
-        t6.data_retirada,
-        t6.data_entrega
+      t1.id_pedido,
+      t1.cliente_id_cliente,
+      t2.nome as nome_cliente,
+      t1.entregador_id_entregador,
+      t1.data_pedido,
+      t2.telefone as tel_cliente,
+      t2.endereco,
+      t3.nome as nome_entregador,
+      t3.telefone as tel_entregador,
+      t3.veiculo,
+      t6.data_retirada,
+      t6.data_entrega,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+        'id_prato', t5.id_prato,
+        'nome', t5.nome,
+        'descricao', t5.descricao,
+        'preco', t5.preco,
+        'tempo', t5.tempo,
+        'pedidos_id_pedido', t4.pedidos_id_pedido
+        )
+      ) as pratos
       FROM pedidos as t1
-        JOIN cliente as t2
-          ON t1.cliente_id_cliente = t2.id_cliente
-        JOIN entregador as t3
-          ON t1.entregador_id_entregador = t3.id_entregador
-        JOIN pedidos_has_pratos as t4
-          ON t1.id_pedido = t4.pedidos_id_pedido
-        JOIN pratos as t5
-          ON t4.pratos_id_prato = t5.id_prato
-        JOIN entrega as t6
-          ON t1.entrega_id_entrega = t6.id_entrega
-      WHERE t1.id_pedido = ?
+      JOIN cliente as t2
+        ON t1.cliente_id_cliente = t2.id_cliente
+      JOIN entregador as t3
+        ON t1.entregador_id_entregador = t3.id_entregador
+      JOIN pedidos_has_pratos as t4
+        ON t1.id_pedido = t4.pedidos_id_pedido
+      JOIN pratos as t5
+        ON t4.pratos_id_prato = t5.id_prato
+      JOIN entrega as t6
+        ON t1.entrega_id_entrega = t6.id_entrega
+        WHERE t1.id_pedido = ?
+      GROUP BY t1.id_pedido
+      
     `, [id]);
-    const [pratos] = await db.query(`SELECT t1.id_prato, t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
-  JOIN pedidos_has_pratos as t2
-          ON t1.id_prato = t2.pratos_id_prato 
-          JOIN pedidos as t3
-          ON t2.pedidos_id_pedido = t3.id_pedido WHERE t3.id_pedido = ?`, [id]);
+   
     if (pedido.length === 0) {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
 
-    return res.status(200).json({ pedido: pedido[0], Pratos: pratos[0] });
+    return res.status(200).json({ pedido: pedido});
 
 
 

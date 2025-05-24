@@ -244,7 +244,26 @@ async function removerIngrediente(req, res) {
 // Cria um novo item no estoque
 async function novoEstoque(req, res) {
   const { quantidade, medida, quantidade_minima, ingrediente_Id_ingrediente } = req.body;
+  // Verifica se já existe um registro de estoque para o ingrediente
+  try {
+    const [existente] = await db.query(
+      'SELECT quantidade FROM estoque WHERE ingrediente_Id_ingrediente = ?',
+      [ingrediente_Id_ingrediente]
+    );
 
+    if (existente.length > 0) {
+      // Se já existe, soma a quantidade e atualiza o registro
+      const novaQuantidade = Number(existente[0].quantidade) + Number(quantidade);
+      await db.query(
+        'UPDATE estoque SET quantidade = ? WHERE ingrediente_Id_ingrediente = ?',
+        [novaQuantidade, ingrediente_Id_ingrediente]
+      );
+      return res.status(200).json({ message: 'Quantidade de estoque atualizada com sucesso', quantidade: novaQuantidade });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro ao verificar estoque existente' });
+  }
   // Validação para garantir que todos os campos sejam enviados
   if (!quantidade || !medida || !quantidade_minima || !ingrediente_Id_ingrediente) {
     return res.status(400).json({ message: 'Os campos quantidade, medida, quantidade_minima e ingrediente_Id_ingrediente são obrigatórios' });
@@ -334,6 +353,44 @@ async function removerEstoque(req, res) {
   }
 }
 
+async function diminuirEstoqueIngrediente(req, res) {
+  const { id } = req.params; 
+  const { quantidade } = req.body;
+
+  if (!id || !quantidade || isNaN(Number(quantidade))) {
+    return res.status(400).json({ message: 'Os campos ingrediente_Id_ingrediente e quantidade são obrigatórios e válidos' });
+  }
+
+  try {
+    // Busca o estoque atual do ingrediente
+    const [estoque] = await db.query(
+      'SELECT quantidade FROM estoque WHERE ingrediente_Id_ingrediente = ?',
+      [id]
+    );
+
+    if (estoque.length === 0) {
+      return res.status(404).json({ message: 'Ingrediente não encontrado no estoque' });
+    }
+
+    const quantidadeAtual = Number(estoque[0].quantidade);
+    const quantidadeNova = quantidadeAtual - Number(quantidade);
+
+    if (quantidadeNova < 0) {
+      return res.status(400).json({ message: 'Quantidade insuficiente no estoque' });
+    }
+
+    await db.query(
+      'UPDATE estoque SET quantidade = ? WHERE ingrediente_Id_ingrediente = ?',
+      [quantidadeNova, id]
+    );
+
+    return res.status(200).json({ message: 'Estoque atualizado com sucesso', quantidade: quantidadeNova });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro ao diminuir estoque do ingrediente' });
+  }
+}
+
 // ========== Pratos ==========
 
 // Cria um novo prato
@@ -384,32 +441,39 @@ async function novoPrato(req, res) {
 // Lista todos os pratos
 async function listarPratos(req, res) {
   try {
-    const [pratos] = await db.query('SELECT * FROM pratos');
+ 
 
     // Adiciona os ingredientes para cada prato
-    const [ingredientes] = await db.query(`
+    // Busca todos os pratos com seus ingredientes em um array chamado 'Ingredientes'
+    const [pratosComIngredientes] = await db.query(`
       SELECT 
-      i.id_ingrediente, 
-      i.descricao, 
-      ip.quantidade, 
-      ip.medida, 
-      ip.pratos_id_prato, 
-      e.quantidade AS estoque
-      FROM ingrediente_has_pratos ip 
-      JOIN ingrediente i 
-      ON ip.ingrediente_id_ingrediente = i.id_ingrediente
-      JOIN estoque e
-      ON e.ingrediente_Id_ingrediente = i.id_ingrediente
+      p.id_prato,
+      p.nome,
+      p.descricao,
+      p.preco,
+      p.tempo,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+        'id_ingrediente', i.id_ingrediente,
+        'descricao', i.descricao,
+        'quantidade', ip.quantidade,
+        'medida', ip.medida,
+        'estoque', IFNULL(e.quantidade, 0)
+        )
+      ) AS Ingredientes
+      FROM pratos p
+      JOIN ingrediente_has_pratos ip ON p.id_prato = ip.pratos_id_prato
+      JOIN ingrediente i ON ip.ingrediente_id_ingrediente = i.id_ingrediente
+      LEFT JOIN estoque e ON e.ingrediente_Id_ingrediente = i.id_ingrediente
+      GROUP BY p.id_prato
+      HAVING MIN(IFNULL(e.quantidade, 0) - IFNULL(e.quantidade_minima, 0)) > 0
+       AND COUNT(*) = SUM(IF(e.quantidade IS NOT NULL, 1, 0))
     `);
 
-    const pratosComIngredientes = pratos.map((prato) => {
-      const ingredientesDoPrato = ingredientes.filter(ingrediente => ingrediente.pratos_id_prato === prato.id_prato);
-      ingredientesSemId = ingredientesDoPrato.map(({ pratos_id_prato, ...rest }) => rest).map(({ id_ingrediente, ...rest }) => rest);
-    if (ingredientesDoPrato === null){  return { ...prato, ingredientes: ingredientesSemId }; }
+ 
     
-    });
-    if (pratosComIngredientes === null){  return res.status(200).json(pratosComIngredientes); }
-    return res.status(400).json({ message: 'Não há pratos disponiveis' });
+      return res.status(200).json(pratosComIngredientes); 
+  
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao listar pratos' });
@@ -1136,6 +1200,7 @@ module.exports = {
   listarUmEstoque,
   atualizarEstoque,
   removerEstoque,
+  diminuirEstoqueIngrediente,
 
   // Pratos
   novoPrato,

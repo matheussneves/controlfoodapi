@@ -411,6 +411,41 @@ router.put('/estoque/:id', TaskController.atualizarEstoque);
  */
 router.delete('/estoque/:id', TaskController.removerEstoque);
 
+/**
+ * @swagger
+ * /estoque/{id}/diminuir:
+ *   post:
+ *     summary: Diminui a quantidade de um item do estoque
+ *     tags: [Estoque]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do item do estoque
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - quantidade
+ *             properties:
+ *               quantidade:
+ *                 type: number
+ *                 description: Quantidade a ser diminuída
+ *     responses:
+ *       200:
+ *         description: Quantidade do estoque diminuída com sucesso
+ *       400:
+ *         description: Dados inválidos ou quantidade insuficiente
+ *       404:
+ *         description: Item de estoque não encontrado
+ */
+router.post('/estoque/:id/diminuir', TaskController.diminuirEstoqueIngrediente);
+
 // ========== Pratos ==========
 /**
  * @swagger

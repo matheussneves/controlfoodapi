@@ -427,10 +427,10 @@ async function novoPrato(req, res) {
     const pratoId = resultadoPrato.insertId;
 
     // Inserção dos ingredientes relacionados ao prato
-    const ingredientesPromises = ingredientes.map(({ ingrediente_id_ingrediente, quantidade, medida }) => {
+    const ingredientesPromises = ingredientes.map(({ id_ingrediente, quantidade, medida }) => {
       return db.query(
         'INSERT INTO ingrediente_has_pratos (pratos_id_prato, ingrediente_id_ingrediente, quantidade, medida) VALUES (?, ?, ?, ?)',
-        [pratoId, ingrediente_id_ingrediente, quantidade, medida]
+        [pratoId, id_ingrediente, quantidade, medida]
       );
     });
 

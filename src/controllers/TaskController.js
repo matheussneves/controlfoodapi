@@ -1057,7 +1057,11 @@ async function listarUmPedido(req, res) {
     const [pedido] = await db.query(`
       SELECT
         t1.id_pedido,
+        t1.cliente_id_cliente,
         t2.nome as nome_cliente,
+        t1.entregador_id_entregador,
+        t1.data_pedido,
+        t4.pratos_id_prato,
         t2.telefone as tel_cliente,
         t2.endereco,
         t3.nome as nome_entregador,
@@ -1079,7 +1083,7 @@ async function listarUmPedido(req, res) {
           ON t1.entrega_id_entrega = t6.id_entrega
       WHERE t1.id_pedido = ?
     `, [id]);
-    const [pratos] = await db.query(`SELECT t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
+    const [pratos] = await db.query(`SELECT t1.id_prato, t1.nome, t1.descricao, t1.preco, t1.tempo, t2.pedidos_id_pedido  FROM pratos as t1
   JOIN pedidos_has_pratos as t2
           ON t1.id_prato = t2.pratos_id_prato 
           JOIN pedidos as t3

@@ -1156,13 +1156,20 @@ async function atualizarPedido(req, res) {
 
     // Adiciona os novos pratos ao pedido
     const pratosPromises = pratos.map(({ id_prato }) => {
-      if (!id_prato) {
-        throw new Error('Os campos id_prato e quantidade são obrigatórios para cada prato');
+      // Validação dos pratos
+      const idsPratos = pratos.map(({ id_prato }) => id_prato);
+      if (idsPratos.some(id => !id)) {
+        throw new Error('Os campos id_prato são obrigatórios para cada prato');
       }
-      return db.query(
-        'INSERT INTO pedidos_has_pratos (pedidos_id_pedido, pratos_id_prato) VALUES (?, ?)',
-        [id, id_prato]
-      );
+
+      // Insert em lote para todos os pratos
+       
+        const values = idsPratos.map(id_prato => `(${db.escape(id)}, ${db.escape(id_prato)})`).join(', ');
+         return db.query(
+        `INSERT INTO pedidos_has_pratos (pedidos_id_pedido, pratos_id_prato) VALUES ${values}`
+        );
+   
+     
     });
 
     await Promise.all(pratosPromises);
